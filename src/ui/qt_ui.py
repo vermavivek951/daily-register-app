@@ -18,11 +18,12 @@ from ..utils.analytics import Analytics
 from ..utils.translations import Translations
 import traceback
 import logging
+from src.utils.version import __version__ as APP_VERSION # Import version
 
 # --- Version Information ---
-APP_VERSION = "1.0.0"
-LATEST_VERSION_URL = "https://raw.githubusercontent.com/vermavivek951/daily-register-app/refs/heads/master/latest_version.txt" # TODO: Replace with actual URL
-DOWNLOAD_PAGE_URL = "https://github.com/vermavivek951/daily-register-app/releases/tag/v1.0.0"       # TODO: Replace with actual URL
+# APP_VERSION = "1.0.0" # Removed - now imported
+LATEST_VERSION_URL = "YOUR_URL_TO_LATEST_VERSION.TXT_HERE" # TODO: Replace with actual URL
+DOWNLOAD_PAGE_URL = "YOUR_URL_TO_DOWNLOAD_PAGE_HERE"       # TODO: Replace with actual URL
 # --------------------------
 
 class DailyRegisterUI(QMainWindow):

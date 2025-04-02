@@ -9,6 +9,7 @@ build/
 dist/
 Output/
 *.spec
+installer_script.iss # Ignore generated script
 
 # User data / Logs / Backups (These should generally not be in version control)
 *.db
