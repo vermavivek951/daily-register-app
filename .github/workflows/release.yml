@@ -28,8 +28,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
-        pip install pywin32
         pip install inno-setup-compiler
+        pip install pywin32
         pip install PyQt6
         pip install PyQt6-Qt6
         pip install PyQt6-sip
@@ -39,10 +39,13 @@ jobs:
         python --version
         pip --version
         pip list
-        echo "=== Checking PyQt6 Installation ==="
+        echo "=== Checking Dependencies ==="
         python -c "import PyQt6; print('PyQt6 version:', PyQt6.__version__)"
         python -c "import PyQt6.QtCore; print('QtCore available')"
         python -c "import PyQt6.QtWidgets; print('QtWidgets available')"
+        python -c "import matplotlib; print('matplotlib version:', matplotlib.__version__)"
+        python -c "import pandas; print('pandas version:', pandas.__version__)"
+        python -c "import openpyxl; print('openpyxl version:', openpyxl.__version__)"
     
     - name: Update version
       shell: pwsh
@@ -61,10 +64,13 @@ jobs:
       run: |
         echo "=== Installed Packages ==="
         pip list
-        echo "=== PyQt6 Details ==="
+        echo "=== Package Details ==="
         pip show PyQt6
         pip show PyQt6-Qt6
         pip show PyQt6-sip
+        pip show matplotlib
+        pip show pandas
+        pip show openpyxl
     
     - name: Build executable
       run: python build.py --version ${{ github.ref_name }}
