@@ -1,4 +1,8 @@
 pandas>=1.3.0
 openpyxl>=3.0.7
 pywin32>=300; platform_system == "Windows"
-packaging>=21.0 # For version comparison in update check 
+packaging>=21.0 # For version comparison in update check
+matplotlib>=3.5.0
+PyQt6>=6.4.0
+PyQt6-Qt6>=6.4.0
+PyQt6-sip>=13.4.0 

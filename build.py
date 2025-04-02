@@ -175,6 +175,28 @@ def run_pyinstaller(version):
         "--hidden-import=PyQt6.QtCore.QMetaType",
         "--hidden-import=PyQt6.QtCore.QMetaClassInfo",
         "--hidden-import=PyQt6.QtCore.QMetaConnection",
+        # Additional dependencies
+        "--hidden-import=pandas",
+        "--hidden-import=requests",
+        "--hidden-import=sqlite3",
+        "--hidden-import=openpyxl",
+        "--hidden-import=win32api",
+        "--hidden-import=win32con",
+        "--hidden-import=win32gui",
+        "--hidden-import=win32process",
+        "--hidden-import=win32security",
+        "--hidden-import=win32timezone",
+        # Matplotlib imports
+        "--hidden-import=matplotlib",
+        "--hidden-import=matplotlib.backends.backend_qt5agg",
+        "--hidden-import=matplotlib.backends.backend_agg",
+        "--hidden-import=matplotlib.backends.backend_svg",
+        "--hidden-import=matplotlib.figure",
+        "--hidden-import=matplotlib.pyplot",
+        "--hidden-import=matplotlib.backends.backend_qt",
+        "--hidden-import=matplotlib.backends.backend_qtagg",
+        # Collect all components
+        "--collect-all", "matplotlib",
         # Collect all PyQt6 components
         "--collect-all", "PyQt6",
         "--collect-all", "PyQt6-Qt6",
