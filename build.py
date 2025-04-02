@@ -4,6 +4,7 @@ import subprocess
 import re
 import traceback
 from pathlib import Path
+from src.utils.version import APP_ID  # Import AppId directly from version.py
 
 # --- Configuration ---
 PROJECT_ROOT = Path(__file__).parent.resolve() # Get absolute path of script's dir
@@ -38,21 +39,22 @@ def get_version():
 
 def generate_installer_script(version):
     """Generates installer_script.iss from a template"""
-    print(f"--> Generating installer script for version {version}...")
+    print(f"--> Generating installer script for version {version} (AppId: {APP_ID})...")
     try:
         with open(INSTALLER_SCRIPT_TEMPLATE, 'r', encoding='utf-8') as f_template:
             template_content = f_template.read()
 
         # Define patterns for replacement
-        define_pattern = re.compile(r"^(#define\s+MyAppVersion\s+)[\"'].*?[\"']", re.MULTILINE)
+        define_pattern = re.compile(r'^(#define\s+MyAppVersion\s+)[\'].*?[\']', re.MULTILINE)
         filename_pattern = re.compile(r"^(OutputBaseFilename=.*?_v)\{#MyAppVersion}", re.MULTILINE)
         version_pattern = re.compile(r"^(AppVersion=)\{#MyAppVersion}", re.MULTILINE)
+        appid_pattern = re.compile(r"^(AppId=)\{#MyAppId}", re.MULTILINE) # Pattern for AppId
 
 
         # Replace version in #define line
-        updated_content, n_subs_define = define_pattern.subn(rf"\g<1>\"{version}\"", template_content)
+        updated_content, n_subs_define = define_pattern.subn(f'\1"{version}"', template_content)
         if n_subs_define == 0:
-                raise ValueError(f"Could not find '#define MyAppVersion \"...\"' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
+            raise ValueError(f"Could not find '#define MyAppVersion \"...\"' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
 
         # Replace version marker in OutputBaseFilename line
         updated_content, n_subs_filename = filename_pattern.subn(rf"\g<1>{version}", updated_content)
@@ -74,6 +76,24 @@ def generate_installer_script(version):
             if n_subs_appversion_direct == 0:
                 raise ValueError(f"Could not find/replace version in 'AppVersion=...' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
 
+        # Replace AppId marker
+        updated_content, n_subs_appid = appid_pattern.subn(f"\\1{APP_ID}", updated_content)
+        if n_subs_appid == 0:
+            print(f"Warning: Could not find 'AppId={{#MyAppId}}' pattern in template: {INSTALLER_SCRIPT_TEMPLATE}. Check template.", file=sys.stderr)
+            # Fallback if template marker wasn't used
+            appid_pattern_direct = re.compile(r"^(AppId=){.*?}", re.MULTILINE)
+            updated_content, n_subs_appid_direct = appid_pattern_direct.subn(rf"\g<1>{APP_ID}", updated_content)
+            if n_subs_appid_direct == 0:
+                raise ValueError(f"Could not find/replace AppId in template: {INSTALLER_SCRIPT_TEMPLATE}")
+
+
+        # --- DEBUG: Print first few lines of generated content ---
+        print("--> DEBUG: Content to be written (first 10 lines):") # Increased lines for debug
+        generated_lines = updated_content.splitlines()
+        for i, line in enumerate(generated_lines[:10]):
+            print(f"    Line {i+1}: {repr(line)}") # Use repr to show hidden chars
+        print("--------------------------------------------------")
+        # --- End DEBUG ---
 
         with open(INSTALLER_SCRIPT_OUTPUT, 'w', encoding='utf-8') as f_output:
             f_output.write(updated_content)

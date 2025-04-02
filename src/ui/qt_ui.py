@@ -10,7 +10,7 @@ from PyQt6.QtGui import QFont, QIcon, QColor, QKeySequence, QShortcut, QPageSize
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from ..database.db_manager import DatabaseManager
+from src.database.db_manager import DatabaseManager
 from ..models.transaction import Transaction, Item, OldItem
 from ..utils.excel_exporter import ExcelExporter
 from ..utils.backup_manager import BackupManager
@@ -19,11 +19,15 @@ from ..utils.translations import Translations
 import traceback
 import logging
 from src.utils.version import __version__ as APP_VERSION # Import version
+from src.utils.config import LATEST_VERSION_URL, DOWNLOAD_PAGE_URL # Import URLs
+import requests
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtCore import QUrl
 
 # --- Version Information ---
 # APP_VERSION = "1.0.0" # Removed - now imported
-LATEST_VERSION_URL = "YOUR_URL_TO_LATEST_VERSION.TXT_HERE" # TODO: Replace with actual URL
-DOWNLOAD_PAGE_URL = "YOUR_URL_TO_DOWNLOAD_PAGE_HERE"       # TODO: Replace with actual URL
+# LATEST_VERSION_URL = "YOUR_URL_TO_LATEST_VERSION.TXT_HERE" # Removed - now imported
+# DOWNLOAD_PAGE_URL = "YOUR_URL_TO_DOWNLOAD_PAGE_HERE"       # Removed - now imported
 # --------------------------
 
 class DailyRegisterUI(QMainWindow):
@@ -2727,58 +2731,44 @@ class DailyRegisterUI(QMainWindow):
             QMessageBox.warning(self, "Error", f"Error updating summary: {str(e)}")
 
     def check_for_updates(self):
-        """Checks for updates by fetching version info from a URL."""
-        logging.info(f"Checking for updates. Current version: {APP_VERSION}")
-        self.statusBar().showMessage("Checking for updates...")
-
-        # Basic check for placeholder URL
-        if LATEST_VERSION_URL == "YOUR_URL_TO_LATEST_VERSION.TXT_HERE":
-            QMessageBox.warning(self, "Update Check Error",
-                                "The update check URL has not been configured yet.")
-            self.statusBar().clearMessage()
-            return
-
+        """Check for updates using GitHub API"""
         try:
-            # Use standard libraries to fetch the version info
-            # NOTE: In a real app, consider using requests library for robustness
-            # and potentially run this in a separate thread to avoid blocking the UI.
-            import urllib.request
-            import ssl
-            from packaging import version # Use packaging library for version comparison
+            # Get current version from version.py
+            from src.utils.version import __version__ as current_version
+            from src.utils.config import LATEST_VERSION_URL, DOWNLOAD_PAGE_URL
 
-            # Create a default SSL context (useful if server has standard certs)
-            context = ssl._create_unverified_context() # Use with caution if cert validation is needed
-
-            with urllib.request.urlopen(LATEST_VERSION_URL, context=context, timeout=10) as response:
-                if response.status == 200:
-                    latest_version_str = response.read().decode('utf-8').strip()
-                    logging.info(f"Latest version found online: {latest_version_str}")
-
-                    current_v = version.parse(APP_VERSION)
-                    latest_v = version.parse(latest_version_str)
-
-                    if latest_v > current_v:
-                        logging.info("Newer version available.")
-                        reply = QMessageBox.information(self, "Update Available",
-                                                      f"A new version ({latest_version_str}) is available.\n" \
-                                                      f"Your current version is {APP_VERSION}.\n\n" \
-                                                      "Would you like to open the download page?",
-                                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                                                      QMessageBox.StandardButton.Yes)
-                        if reply == QMessageBox.StandardButton.Yes:
-                            import webbrowser
-                            webbrowser.open(DOWNLOAD_PAGE_URL)
-                        self.statusBar().showMessage(f"Update available: {latest_version_str}", 5000)
-                    else:
-                        logging.info("Application is up-to-date.")
-                        QMessageBox.information(self, "Up to Date",
-                                                f"You are running the latest version ({APP_VERSION}).")
-                        self.statusBar().showMessage("Application is up-to-date.", 5000)
+            # Get latest version from GitHub API
+            response = requests.get(LATEST_VERSION_URL)
+            if response.status_code == 200:
+                latest_data = response.json()
+                latest_version = latest_data['tag_name'].lstrip('v')  # Remove 'v' prefix if present
+                
+                # Compare versions
+                if latest_version > current_version:
+                    # Format download URL with current version
+                    download_url = DOWNLOAD_PAGE_URL.format(version=current_version)
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Information)
+                    msg.setWindowTitle("Update Available")
+                    msg.setText(f"A new version ({latest_version}) is available!")
+                    msg.setInformativeText(f"Current version: {current_version}\n\n"
+                                         f"Please visit the releases page to download the update.")
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.setDefaultButton(QMessageBox.Ok)
+                    
+                    # Add a button to open the download page
+                    download_button = msg.addButton("Download Update", QMessageBox.ActionRole)
+                    download_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(download_url)))
+                    
+                    msg.exec_()
                 else:
-                    raise Exception(f"Failed to fetch version info. Status code: {response.status}")
-
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Information)
+                    msg.setWindowTitle("No Updates")
+                    msg.setText("You are running the latest version!")
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.exec_()
+            else:
+                print(f"Failed to check for updates: {response.status_code}")
         except Exception as e:
-            logging.error(f"Error checking for updates: {e}", exc_info=True)
-            QMessageBox.critical(self, "Update Check Error",
-                                f"Could not check for updates.\nPlease check your internet connection or try again later.\n\nError: {e}")
-            self.statusBar().showMessage("Update check failed.", 5000)
+            print(f"Error checking for updates: {e}")
