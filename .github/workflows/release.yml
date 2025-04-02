@@ -22,11 +22,14 @@ jobs:
       run: |
         # Remove 'v' prefix from tag to get version number
         $VERSION = "${{ github.ref_name }}".TrimStart('v')
+        Write-Host "Updating version to: $VERSION"
         # Update version.py using PowerShell
         $content = Get-Content -Path "src/utils/version.py" -Raw
-        $content = $content -replace "__version__ = '.*'", "__version__ = '$VERSION'"
+        $content = $content -replace '__version__ = ".*"', "__version__ = `"$VERSION`""
         Set-Content -Path "src/utils/version.py" -Value $content
-        Write-Host "Updated version to $VERSION in version.py"
+        Write-Host "Updated version in version.py"
+        Write-Host "New content:"
+        Get-Content -Path "src/utils/version.py"
     
     - name: Install dependencies
       run: |
@@ -40,14 +43,29 @@ jobs:
     
     - name: Build executable
       run: |
-        python build.py
+        python build.py --version ${{ github.ref_name }}
     
-    - name: Debug - List Output Directory
+    - name: Debug - Show Build Output
       shell: pwsh
       run: |
+        Write-Host "=== Build Output Debug Information ==="
         Write-Host "Current directory: $(Get-Location)"
-        Write-Host "Output directory contents:"
-        Get-ChildItem -Path "Output" -Recurse | ForEach-Object { Write-Host $_.FullName }
+        Write-Host "`nOutput directory contents:"
+        Get-ChildItem -Path "Output" -Recurse | ForEach-Object { 
+          Write-Host "  $($_.FullName)"
+          if ($_.Name -match "DailyRegister_Setup_${{ github.ref_name }}.exe") {
+            Write-Host "    >>> This is the installer we're looking for <<<"
+          }
+        }
+        Write-Host "`nDist directory contents:"
+        Get-ChildItem -Path "dist" -Recurse | ForEach-Object { 
+          Write-Host "  $($_.FullName)"
+        }
+        Write-Host "`nBuild directory contents:"
+        Get-ChildItem -Path "build" -Recurse | ForEach-Object { 
+          Write-Host "  $($_.FullName)"
+        }
+        Write-Host "`n=== End Debug Information ==="
     
     - name: Create Release
       id: create_release
@@ -79,8 +97,16 @@ jobs:
             "Content-Type" = "application/x-msdownload"
           }
           
-          $response = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $installer.FullName
-          Write-Host "Upload successful!"
+          try {
+            $response = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $installer.FullName
+            Write-Host "Upload successful!"
+            Write-Host "Response: $($response | ConvertTo-Json)"
+          } catch {
+            Write-Host "Error uploading file: $_"
+            Write-Host "Status Code: $($_.Exception.Response.StatusCode.value__)"
+            Write-Host "Status Description: $($_.Exception.Response.StatusDescription)"
+            exit 1
+          }
         } else {
           Write-Host "Installer not found! Searching in Output directory:"
           Get-ChildItem -Path "Output" -Recurse -File | ForEach-Object { Write-Host $_.FullName }

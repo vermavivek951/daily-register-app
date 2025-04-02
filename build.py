@@ -3,6 +3,7 @@ import sys
 import subprocess
 import re
 import traceback
+import argparse
 from pathlib import Path
 from src.utils.version import APP_ID  # Import AppId directly from version.py
 
@@ -144,8 +145,18 @@ def main():
     try:
         print("\n=== Starting DailyRegister Build Process ===\n")
         
-        # Get version
-        version = get_version()
+        # Parse command line arguments
+        parser = argparse.ArgumentParser(description='Build DailyRegister installer')
+        parser.add_argument('--version', help='Version number to use (e.g., v1.0.2)')
+        args = parser.parse_args()
+        
+        # Get version from command line or version.py
+        if args.version:
+            version = args.version.lstrip('v')  # Remove 'v' prefix if present
+            print(f"--> Using version from command line: {version}")
+        else:
+            version = get_version()
+            print(f"--> Using version from version.py: {version}")
         
         # Generate installer script
         generate_installer_script(version)
