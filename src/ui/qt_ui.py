@@ -114,16 +114,21 @@ class DailyRegisterUI(QMainWindow):
         """Set up logging to both file and console"""
         import logging
         import sys
+        import os
+        
+        # Get user's AppData directory for logs
+        appdata_dir = os.path.join(os.getenv('APPDATA', ''), 'DailyRegister')
+        logs_dir = os.path.join(appdata_dir, 'logs')
         
         # Create logs directory if it doesn't exist
-        if not os.path.exists('logs'):
-            os.makedirs('logs')
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
             
         # Set up logging format
         log_format = '%(asctime)s - %(levelname)s - %(message)s'
         
         # Create file handler
-        file_handler = logging.FileHandler('logs/app.log')
+        file_handler = logging.FileHandler(os.path.join(logs_dir, 'app.log'))
         file_handler.setFormatter(logging.Formatter(log_format))
         
         # Create console handler
