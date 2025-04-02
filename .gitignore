@@ -1,0 +1,23 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / Build artifacts
+build/
+dist/
+Output/
+*.spec
+
+# User data / Logs / Backups (These should generally not be in version control)
+*.db
+*.db-journal*
+logs/
+backups/
+reports/
+
+# IDE / Editor specific files (Optional, add based on your editor)
+.vscode/
+.idea/
+*.swp
