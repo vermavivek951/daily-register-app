@@ -5,14 +5,14 @@
 ; Do not use the same AppId value in installers for other applications.
 AppId=8955b190-be46-44f1-9bcb-de6f98ead67d
 AppName=Daily Register
-AppVersion=1.0.0
+AppVersion=1.0.1
 AppPublisher=dumbbeast
 DefaultDirName={autopf64}\DailyRegister
 DisableDirPage=no
 DefaultGroupName=Daily Register
 DisableProgramGroupPage=yes
 LicenseFile=
-OutputBaseFilename=DailyRegister_Setup_v1.0.0
+OutputBaseFilename=DailyRegister_Setup_v1.0.1
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
