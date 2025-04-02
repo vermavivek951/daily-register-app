@@ -22,11 +22,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
-        pip install inno-setup-compiler
     
     - name: Install Inno Setup
       run: |
-        choco install innosetup -y
+        choco install innosetup --yes --force
     
     - name: Build executable
       run: |
