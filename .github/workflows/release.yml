@@ -39,13 +39,16 @@ jobs:
         python -c "import PyQt6.QtWidgets; print('QtWidgets available')"
     
     - name: Update version
+      shell: pwsh
       run: |
         $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
-        echo "Setting version to: $version"
+        Write-Host "Setting version to: $version"
         $content = Get-Content -Path "src/utils/version.py" -Raw
-        $content = $content -replace "__version__ = \".*\"", "__version__ = \"$version\""
+        $pattern = '__version__ = ".*"'
+        $replacement = "__version__ = `"$version`""
+        $content = $content -replace $pattern, $replacement
         Set-Content -Path "src/utils/version.py" -Value $content
-        echo "Updated version.py content:"
+        Write-Host "Updated version.py content:"
         Get-Content -Path "src/utils/version.py"
     
     - name: Debug - Show Installed Packages
