@@ -1,21 +1,28 @@
-# Jewellery Shop Manager
+# Daily Register
 
-A comprehensive management system for jewellery shops, designed to be user-friendly and easy to maintain.
+A comprehensive management system for jewellery shops, designed to be user-friendly and efficient for daily operations.
 
-## Installation Instructions
+## Features
 
-### For New Users (Your Parents)
+- Daily transaction management for jewellery items
+- Track gold and silver items with detailed specifications
+- Record old item returns and exchanges
+- Generate daily summaries and reports
+- Export data to Excel format
+- Automatic backup system
+- User-friendly interface
+- Support for multiple payment modes
 
-1. Double-click the "Jewellery Shop Manager Installer.exe" file
-2. Click "Next" through the installation wizard
-3. Choose the installation location (default is recommended)
-4. Click "Install"
-5. Wait for the installation to complete
-6. Click "Finish"
-7. A shortcut will be created on the desktop
-8. Double-click the desktop shortcut to start the application
+## Installation
 
-### For Developers (You)
+### For End Users
+
+1. Download the latest installer from the releases
+2. Run the "Daily Register Installer.exe"
+3. Follow the installation wizard
+4. Launch the application from the desktop shortcut
+
+### For Developers
 
 1. Clone the repository
 2. Install Python 3.6 or higher
@@ -28,87 +35,60 @@ A comprehensive management system for jewellery shops, designed to be user-frien
    python src/main.py
    ```
 
-## Update Instructions
-
-### For Users (Your Parents)
-
-The application will automatically check for updates when started. If an update is available:
-
-1. A popup will appear asking if you want to update
-2. Click "Update Now" to install the update
-3. Wait for the update to complete
-4. The application will restart automatically
-
-### For Developers (You)
-
-To release a new version:
-
-1. Update the version number in `setup.py` and `version.json`
-2. Create a new release on GitHub
-3. Upload the new version files
-4. Update the version information on the update server
-
-## Support
-
-If your parents encounter any issues:
-
-1. They can contact you directly
-2. You can provide remote support using TeamViewer or similar software
-3. You can access the application logs in the installation directory
-
-## Backup and Data Safety
-
-- The application automatically creates daily backups
-- Backups are stored in the installation directory under "backups"
-- You can restore from a backup using the "Restore Database" option in the File menu
-
-## Maintenance Tips
-
-1. Regularly check the application logs for any issues
-2. Monitor the backup directory to ensure backups are being created
-3. Keep track of the version numbers and update history
-4. Test updates on a development machine before releasing them
-
-## Version History
-
-- 1.0.0: Initial release
-  - Basic transaction management
-  - Item tracking
-  - Daily summaries
-  - Backup functionality
-
-## Features
-
-- Add, edit, and delete jewelry transactions
-- Track gold and silver items
-- Record old item returns
-- Generate daily summaries
-- Export data to Excel
-- Support for multiple payment modes
-
 ## Project Structure
 
 ```
-src/
-├── database/         # Database management
-├── models/          # Data models
-├── ui/             # User interface components
-├── utils/          # Utility functions
-└── main.py         # Application entry point
+daily_register/
+├── src/
+│   ├── database/     # Database management and operations
+│   ├── models/       # Data models and business logic
+│   ├── ui/          # User interface components
+│   ├── utils/       # Utility functions and helpers
+│   └── main.py      # Application entry point
+├── build/           # Build configuration and scripts
+├── dist/           # Distribution files
+├── Output/         # Generated reports and exports
+├── logs/           # Application logs
+└── requirements.txt # Python dependencies
 ```
 
-## Usage
+## Dependencies
 
-1. Enter transaction details in the input fields
-2. Click "Add Item" to save the transaction
-3. Use the date selector to view transactions for different dates
-4. Select transactions to edit or delete
-5. Export data to Excel using the "Export to Excel" button
+- pandas >= 1.3.0 (Data manipulation and analysis)
+- openpyxl >= 3.0.7 (Excel file handling)
+- pywin32 >= 300 (Windows-specific functionality)
+- packaging >= 21.0 (Version comparison utilities)
+
+## Usage Guide
+
+1. **Daily Transactions**
+   - Enter new transaction details
+   - Add items with specifications
+   - Record payments and payment modes
+
+2. **Reports and Exports**
+   - View daily summaries
+   - Export data to Excel
+   - Generate custom reports
+
+3. **Data Management**
+   - Backup and restore functionality
+   - Data validation and error checking
+   - Automatic daily backups
 
 ## Data Storage
 
-The application uses SQLite for data storage. The database file (`jewelry_shop.db`) is created automatically in the project root directory.
+- SQLite database for reliable data storage
+- Automatic daily backups
+- Excel exports for reporting and analysis
 
-## Excel Export
+## Support and Maintenance
 
-Exported Excel files are saved in the `exports` directory with the format `jewelry_sales_YYYY-MM-DD.xlsx`. 
+- Check the logs directory for troubleshooting
+- Regular backups are stored in the installation directory
+- Contact support for technical assistance
+
+
+## License
+
+This software is proprietary and intended for specific business use. 
