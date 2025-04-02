@@ -45,47 +45,30 @@ def generate_installer_script(version):
             template_content = f_template.read()
 
         # Define patterns for replacement
-        define_pattern = re.compile(r'^(#define\s+MyAppVersion\s+)[\'].*?[\']', re.MULTILINE)
-        filename_pattern = re.compile(r"^(OutputBaseFilename=.*?_v)\{#MyAppVersion}", re.MULTILINE)
-        version_pattern = re.compile(r"^(AppVersion=)\{#MyAppVersion}", re.MULTILINE)
-        appid_pattern = re.compile(r"^(AppId=)\{#MyAppId}", re.MULTILINE) # Pattern for AppId
-
+        define_pattern = re.compile(r'^(#define\s+MyAppVersion\s+)"\{#MyAppVersion\}"', re.MULTILINE)
+        filename_pattern = re.compile(r"^(OutputBaseFilename=.*?_v)\{#MyAppVersion\}", re.MULTILINE)
+        version_pattern = re.compile(r"^(AppVersion=)\{#MyAppVersion\}", re.MULTILINE)
+        appid_pattern = re.compile(r"^(AppId=)\{#MyAppId\}", re.MULTILINE)
 
         # Replace version in #define line
-        updated_content, n_subs_define = define_pattern.subn(f'\1"{version}"', template_content)
-        if n_subs_define == 0:
-            raise ValueError(f"Could not find '#define MyAppVersion \"...\"' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
+        updated_content = define_pattern.sub(f'#define MyAppVersion "{version}"', template_content)
+        if updated_content == template_content:
+            raise ValueError(f"Could not find '#define MyAppVersion \"{{#MyAppVersion}}\"' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
 
         # Replace version marker in OutputBaseFilename line
-        updated_content, n_subs_filename = filename_pattern.subn(rf"\g<1>{version}", updated_content)
-        if n_subs_filename == 0:
+        updated_content = filename_pattern.sub(f'OutputBaseFilename=DailyRegister_Setup_v{version}', updated_content)
+        if updated_content == template_content:
             print(f"Warning: Could not find 'OutputBaseFilename=..._v{{#MyAppVersion}}' pattern in template: {INSTALLER_SCRIPT_TEMPLATE}. Check template.", file=sys.stderr)
-            # As a fallback, maybe try replacing the hardcoded version if the template wasn't updated
-            filename_pattern_direct = re.compile(r"^(OutputBaseFilename=.*?_v)\d+\.\d+\.\d+", re.MULTILINE)
-            updated_content, n_subs_filename_direct = filename_pattern_direct.subn(rf"\g<1>{version}", updated_content)
-            if n_subs_filename_direct == 0:
-                 raise ValueError(f"Could not find/replace version in 'OutputBaseFilename=...' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
 
         # Replace version marker in AppVersion line
-        updated_content, n_subs_appversion = version_pattern.subn(rf"\g<1>{version}", updated_content)
-        if n_subs_appversion == 0:
+        updated_content = version_pattern.sub(f'AppVersion={version}', updated_content)
+        if updated_content == template_content:
             print(f"Warning: Could not find 'AppVersion={{#MyAppVersion}}' pattern in template: {INSTALLER_SCRIPT_TEMPLATE}. Check template.", file=sys.stderr)
-             # As a fallback, maybe try replacing the hardcoded version if the template wasn't updated
-            version_pattern_direct = re.compile(r"^(AppVersion=)\d+\.\d+\.\d+", re.MULTILINE)
-            updated_content, n_subs_appversion_direct = version_pattern_direct.subn(rf"\g<1>{version}", updated_content)
-            if n_subs_appversion_direct == 0:
-                raise ValueError(f"Could not find/replace version in 'AppVersion=...' line in template: {INSTALLER_SCRIPT_TEMPLATE}")
 
         # Replace AppId marker
-        updated_content, n_subs_appid = appid_pattern.subn(f"\\1{APP_ID}", updated_content)
-        if n_subs_appid == 0:
+        updated_content = appid_pattern.sub(f'AppId={APP_ID}', updated_content)
+        if updated_content == template_content:
             print(f"Warning: Could not find 'AppId={{#MyAppId}}' pattern in template: {INSTALLER_SCRIPT_TEMPLATE}. Check template.", file=sys.stderr)
-            # Fallback if template marker wasn't used
-            appid_pattern_direct = re.compile(r"^(AppId=){.*?}", re.MULTILINE)
-            updated_content, n_subs_appid_direct = appid_pattern_direct.subn(rf"\g<1>{APP_ID}", updated_content)
-            if n_subs_appid_direct == 0:
-                raise ValueError(f"Could not find/replace AppId in template: {INSTALLER_SCRIPT_TEMPLATE}")
-
 
         # --- DEBUG: Print first few lines of generated content ---
         print("--> DEBUG: Content to be written (first 10 lines):") # Increased lines for debug
@@ -105,7 +88,6 @@ def generate_installer_script(version):
 
 def run_pyinstaller(version):
     """Runs PyInstaller"""
-    # Note: PyInstaller output folder/exe name doesn't typically include version
     command = [
         PYTHON_EXE, "-m", "PyInstaller",
         "--windowed",
@@ -120,38 +102,40 @@ def run_pyinstaller(version):
     try:
         # Use shell=True on Windows if python isn't directly found otherwise
         use_shell = sys.platform == "win32"
-        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT, capture_output=True, text=True, shell=use_shell, encoding='utf-8', errors='replace')
-        print(result.stdout)
-        if result.stderr:
-             print(f"PyInstaller stderr:\n{result.stderr}", file=sys.stderr)
-        print("   + PyInstaller build successful.")
+        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT, shell=use_shell)
+        
+        # Verify the output exists
+        dist_dir = PROJECT_ROOT / "dist" / "DailyRegister"
+        exe_path = dist_dir / "DailyRegister.exe"
+        
+        if not dist_dir.exists():
+            raise RuntimeError(f"PyInstaller output directory not found: {dist_dir}")
+        if not exe_path.exists():
+            raise RuntimeError(f"PyInstaller executable not found: {exe_path}")
+            
+        print(f"   + PyInstaller build successful.")
+        print(f"   + Executable location: {exe_path}")
+        print(f"   + Directory contents of {dist_dir}:")
+        for item in dist_dir.iterdir():
+            print(f"     - {item.name}")
+            
     except subprocess.CalledProcessError as e:
-        print(f"PyInstaller stdout:\n{e.stdout}")
-        print(f"PyInstaller stderr:\n{e.stderr}", file=sys.stderr)
         raise RuntimeError(f"PyInstaller failed with exit code {e.returncode}")
     except FileNotFoundError:
-            raise FileNotFoundError(f"Could not find Python executable: {PYTHON_EXE}. Ensure it's in PATH or provide full path.")
-
+        raise FileNotFoundError(f"Could not find Python executable: {PYTHON_EXE}. Ensure it's in PATH or provide full path.")
 
 def run_inno_setup():
     """Runs Inno Setup Compiler"""
     if not INNO_COMPILER.exists():
-            raise FileNotFoundError(f"Inno Setup Compiler not found at: {INNO_COMPILER}. Please install or update path.")
+        raise FileNotFoundError(f"Inno Setup Compiler not found at: {INNO_COMPILER}. Please install or update path.")
     command = [str(INNO_COMPILER), str(INSTALLER_SCRIPT_OUTPUT)]
     print(f"--> Running Inno Setup Compiler...")
     print(f"    Command: {' '.join(command)}")
     try:
-        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace')
-        # Inno Setup output often includes progress, maybe just print last lines or success
-        print("\n".join(result.stdout.splitlines()[-5:])) # Print last few lines
-        if result.stderr:
-             print(f"Inno Setup stderr:\n{result.stderr}", file=sys.stderr)
+        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT)
         print(f"   + Inno Setup build successful. Installer in: {PROJECT_ROOT / 'Output'}")
     except subprocess.CalledProcessError as e:
-        print(f"Inno Setup stdout:\n{e.stdout}")
-        print(f"Inno Setup stderr:\n{e.stderr}", file=sys.stderr)
         raise RuntimeError(f"Inno Setup Compiler failed with exit code {e.returncode}")
-
 
 # --- Main Execution ---
 if __name__ == "__main__":

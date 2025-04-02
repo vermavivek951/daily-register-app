@@ -18,8 +18,7 @@ from ..utils.analytics import Analytics
 from ..utils.translations import Translations
 import traceback
 import logging
-from src.utils.version import __version__ as APP_VERSION # Import version
-from src.utils.config import LATEST_VERSION_URL, DOWNLOAD_PAGE_URL # Import URLs
+from src.utils.version import __version__ as APP_VERSION , LATEST_VERSION_URL , DOWNLOAD_PAGE_URL # Import version
 import requests
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtCore import QUrl
@@ -2623,8 +2622,8 @@ class DailyRegisterUI(QMainWindow):
     def show_about_dialog(self):
         """Show the about dialog"""
         QMessageBox.about(self, "About",
-            "Jewellery Shop Management System\n\n"
-            "Version 1.0\n"
+            f"Jewellery Shop Management System\n\n"
+            f"Version {APP_VERSION}\n"
             "A comprehensive solution for managing jewellery shop transactions.\n\n"
             "© 2024 All rights reserved.")
 
@@ -2733,10 +2732,6 @@ class DailyRegisterUI(QMainWindow):
     def check_for_updates(self):
         """Check for updates using GitHub API"""
         try:
-            # Get current version from version.py
-            from src.utils.version import __version__ as current_version
-            from src.utils.config import LATEST_VERSION_URL, DOWNLOAD_PAGE_URL
-
             # Get latest version from GitHub API
             response = requests.get(LATEST_VERSION_URL)
             if response.status_code == 200:
@@ -2744,30 +2739,30 @@ class DailyRegisterUI(QMainWindow):
                 latest_version = latest_data['tag_name'].lstrip('v')  # Remove 'v' prefix if present
                 
                 # Compare versions
-                if latest_version > current_version:
+                if latest_version > APP_VERSION:
                     # Format download URL with current version
-                    download_url = DOWNLOAD_PAGE_URL.format(version=current_version)
+                    download_url = DOWNLOAD_PAGE_URL.format(version=APP_VERSION)
                     msg = QMessageBox()
-                    msg.setIcon(QMessageBox.Information)
+                    msg.setIcon(QMessageBox.Icon.Information)
                     msg.setWindowTitle("Update Available")
                     msg.setText(f"A new version ({latest_version}) is available!")
-                    msg.setInformativeText(f"Current version: {current_version}\n\n"
+                    msg.setInformativeText(f"Current version: {APP_VERSION}\n\n"
                                          f"Please visit the releases page to download the update.")
-                    msg.setStandardButtons(QMessageBox.Ok)
-                    msg.setDefaultButton(QMessageBox.Ok)
+                    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                    msg.setDefaultButton(QMessageBox.StandardButton.Ok)
                     
                     # Add a button to open the download page
-                    download_button = msg.addButton("Download Update", QMessageBox.ActionRole)
+                    download_button = msg.addButton("Download Update", QMessageBox.ButtonRole.ActionRole)
                     download_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(download_url)))
                     
-                    msg.exec_()
+                    msg.exec()
                 else:
                     msg = QMessageBox()
-                    msg.setIcon(QMessageBox.Information)
+                    msg.setIcon(QMessageBox.Icon.Information)
                     msg.setWindowTitle("No Updates")
                     msg.setText("You are running the latest version!")
-                    msg.setStandardButtons(QMessageBox.Ok)
-                    msg.exec_()
+                    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                    msg.exec()
             else:
                 print(f"Failed to check for updates: {response.status_code}")
         except Exception as e:
