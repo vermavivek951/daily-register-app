@@ -14,6 +14,7 @@ UTILS_DIR = SRC_DIR / "utils"
 VERSION_FILE = UTILS_DIR / "version.py"
 MAIN_SCRIPT = SRC_DIR / "main.py"
 ICON_FILE = PROJECT_ROOT / "icon.ico"
+MANIFEST_FILE = PROJECT_ROOT / "app.manifest"
 APP_NAME = "DailyRegister"
 INSTALLER_SCRIPT_TEMPLATE = PROJECT_ROOT / "installer_script.iss.template" # Template file
 INSTALLER_SCRIPT_OUTPUT = PROJECT_ROOT / "installer_script.iss" # Generated file
@@ -80,14 +81,6 @@ def generate_installer_script(version):
         if updated_content == template_content:
             print(f"Warning: Could not find 'AppId={{#MyAppId}}' pattern in template: {INSTALLER_SCRIPT_TEMPLATE}. Check template.", file=sys.stderr)
 
-        # --- DEBUG: Print first few lines of generated content ---
-        print("--> DEBUG: Content to be written (first 10 lines):") # Increased lines for debug
-        generated_lines = updated_content.splitlines()
-        for i, line in enumerate(generated_lines[:10]):
-            print(f"    Line {i+1}: {repr(line)}") # Use repr to show hidden chars
-        print("--------------------------------------------------")
-        # --- End DEBUG ---
-
         with open(INSTALLER_SCRIPT_OUTPUT, 'w', encoding='utf-8') as f_output:
             f_output.write(updated_content)
         print(f"   + Generated installer script: {INSTALLER_SCRIPT_OUTPUT}")
@@ -103,6 +96,12 @@ def run_pyinstaller(version):
         "--windowed",
         f"--name={APP_NAME}",
         f"--icon={ICON_FILE}",
+        f"--manifest={MANIFEST_FILE}",
+        "--add-data", f"{MANIFEST_FILE};.",
+        "--hidden-import=PyQt6",
+        "--hidden-import=PyQt6.QtCore",
+        "--hidden-import=PyQt6.QtGui",
+        "--hidden-import=PyQt6.QtWidgets",
         str(MAIN_SCRIPT),
         "--clean", # Clean cache before build
         "--noconfirm" # Don't ask for confirmation to overwrite dist
