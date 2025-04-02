@@ -17,6 +17,14 @@ jobs:
       with:
         python-version: '3.9'
     
+    - name: Update version in version.py
+      run: |
+        # Remove 'v' prefix from tag to get version number
+        VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
+        # Update version.py
+        sed -i "s/__version__ = '.*'/__version__ = '$VERSION'/" src/utils/version.py
+        echo "Updated version to $VERSION in version.py"
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
