@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QCheckBox, QHeaderView, QDialog, QFormLayout,
                              QDateEdit, QAbstractItemView, QListWidget, QListWidgetItem)
 from PyQt6.QtCore import Qt, QSize, QTimer, QDate, QMarginsF
-from PyQt6.QtGui import QFont, QIcon, QColor, QKeySequence, QShortcut, QPageSize
+from PyQt6.QtGui import QFont, QIcon, QColor, QKeySequence, QShortcut, QPageSize, QAction
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
@@ -16,6 +16,14 @@ from ..utils.excel_exporter import ExcelExporter
 from ..utils.backup_manager import BackupManager
 from ..utils.analytics import Analytics
 from ..utils.translations import Translations
+import traceback
+import logging
+
+# --- Version Information ---
+APP_VERSION = "1.0.0"
+LATEST_VERSION_URL = "https://raw.githubusercontent.com/vermavivek951/daily-register-app/refs/heads/master/latest_version.txt" # TODO: Replace with actual URL
+DOWNLOAD_PAGE_URL = "https://github.com/vermavivek951/daily-register-app/releases/tag/v1.0.0"       # TODO: Replace with actual URL
+# --------------------------
 
 class DailyRegisterUI(QMainWindow):
     def __init__(self):
@@ -25,9 +33,10 @@ class DailyRegisterUI(QMainWindow):
         self.current_language = 'en'
         self.translations = Translations()
         
-        self.setWindowTitle(self.tr('app_title'))
-        self.setMinimumSize(1366, 768)
-        
+        self.setWindowTitle("Jewellery Shop Management System")
+        self.setGeometry(100, 100, 1200, 800)
+        self.setStyleSheet("QMainWindow { background-color: #f8f9fa; }") # Light background
+
         # Initialize data structures
         self.current_directory = os.getcwd()
         self.current_file = None
@@ -2603,6 +2612,9 @@ class DailyRegisterUI(QMainWindow):
         about_action = help_menu.addAction("About")
         about_action.triggered.connect(self.show_about_dialog)
         
+        update_action = help_menu.addAction("Check for Updates...")
+        update_action.triggered.connect(self.check_for_updates)
+        
     def show_about_dialog(self):
         """Show the about dialog"""
         QMessageBox.about(self, "About",
@@ -2712,3 +2724,60 @@ class DailyRegisterUI(QMainWindow):
         except Exception as e:
             self.logger.error(f"Error updating summary: {str(e)}", exc_info=True)
             QMessageBox.warning(self, "Error", f"Error updating summary: {str(e)}")
+
+    def check_for_updates(self):
+        """Checks for updates by fetching version info from a URL."""
+        logging.info(f"Checking for updates. Current version: {APP_VERSION}")
+        self.statusBar().showMessage("Checking for updates...")
+
+        # Basic check for placeholder URL
+        if LATEST_VERSION_URL == "YOUR_URL_TO_LATEST_VERSION.TXT_HERE":
+            QMessageBox.warning(self, "Update Check Error",
+                                "The update check URL has not been configured yet.")
+            self.statusBar().clearMessage()
+            return
+
+        try:
+            # Use standard libraries to fetch the version info
+            # NOTE: In a real app, consider using requests library for robustness
+            # and potentially run this in a separate thread to avoid blocking the UI.
+            import urllib.request
+            import ssl
+            from packaging import version # Use packaging library for version comparison
+
+            # Create a default SSL context (useful if server has standard certs)
+            context = ssl._create_unverified_context() # Use with caution if cert validation is needed
+
+            with urllib.request.urlopen(LATEST_VERSION_URL, context=context, timeout=10) as response:
+                if response.status == 200:
+                    latest_version_str = response.read().decode('utf-8').strip()
+                    logging.info(f"Latest version found online: {latest_version_str}")
+
+                    current_v = version.parse(APP_VERSION)
+                    latest_v = version.parse(latest_version_str)
+
+                    if latest_v > current_v:
+                        logging.info("Newer version available.")
+                        reply = QMessageBox.information(self, "Update Available",
+                                                      f"A new version ({latest_version_str}) is available.\n" \
+                                                      f"Your current version is {APP_VERSION}.\n\n" \
+                                                      "Would you like to open the download page?",
+                                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                                      QMessageBox.StandardButton.Yes)
+                        if reply == QMessageBox.StandardButton.Yes:
+                            import webbrowser
+                            webbrowser.open(DOWNLOAD_PAGE_URL)
+                        self.statusBar().showMessage(f"Update available: {latest_version_str}", 5000)
+                    else:
+                        logging.info("Application is up-to-date.")
+                        QMessageBox.information(self, "Up to Date",
+                                                f"You are running the latest version ({APP_VERSION}).")
+                        self.statusBar().showMessage("Application is up-to-date.", 5000)
+                else:
+                    raise Exception(f"Failed to fetch version info. Status code: {response.status}")
+
+        except Exception as e:
+            logging.error(f"Error checking for updates: {e}", exc_info=True)
+            QMessageBox.critical(self, "Update Check Error",
+                                f"Could not check for updates.\nPlease check your internet connection or try again later.\n\nError: {e}")
+            self.statusBar().showMessage("Update check failed.", 5000)
