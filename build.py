@@ -102,6 +102,12 @@ def run_pyinstaller(version):
         "--hidden-import=PyQt6.QtCore",
         "--hidden-import=PyQt6.QtGui",
         "--hidden-import=PyQt6.QtWidgets",
+        "--hidden-import=PyQt6.sip",
+        "--hidden-import=PyQt6.QtPrintSupport",
+        "--hidden-import=PyQt6.QtSvg",
+        "--collect-all", "PyQt6",  # This ensures all PyQt6 files are collected
+        "--collect-all", "PyQt6-Qt6",  # This ensures Qt6 binaries are collected
+        "--collect-all", "PyQt6-sip",  # This ensures sip files are collected
         str(MAIN_SCRIPT),
         "--clean", # Clean cache before build
         "--noconfirm" # Don't ask for confirmation to overwrite dist
