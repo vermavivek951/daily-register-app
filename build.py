@@ -18,6 +18,7 @@ INSTALLER_SCRIPT_TEMPLATE = PROJECT_ROOT / "installer_script.iss.template" # Tem
 INSTALLER_SCRIPT_OUTPUT = PROJECT_ROOT / "installer_script.iss" # Generated file
 INNO_COMPILER = Path("C:/Program Files (x86)/Inno Setup 6/ISCC.exe") # Adjust path if needed
 PYTHON_EXE = sys.executable # Use the current python interpreter
+OUTPUT_DIR = PROJECT_ROOT / "Output" # Define output directory
 
 # --- Functions ---
 def get_version():
@@ -36,6 +37,14 @@ def get_version():
             raise FileNotFoundError(f"Version file not found: {VERSION_FILE}")
     except Exception as e:
             raise RuntimeError(f"Error reading version file: {e}")
+
+def ensure_output_dir():
+    """Ensures the Output directory exists"""
+    try:
+        OUTPUT_DIR.mkdir(exist_ok=True)
+        print(f"--> Ensured Output directory exists at: {OUTPUT_DIR}")
+    except Exception as e:
+        raise RuntimeError(f"Error creating Output directory: {e}")
 
 def generate_installer_script(version):
     """Generates installer_script.iss from a template"""
@@ -98,59 +107,61 @@ def run_pyinstaller(version):
         "--noconfirm" # Don't ask for confirmation to overwrite dist
     ]
     print(f"--> Running PyInstaller...")
-    print(f"    Command: {' '.join(map(str, command))}")
     try:
-        # Use shell=True on Windows if python isn't directly found otherwise
-        use_shell = sys.platform == "win32"
-        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT, shell=use_shell)
-        
-        # Verify the output exists
-        dist_dir = PROJECT_ROOT / "dist" / "DailyRegister"
-        exe_path = dist_dir / "DailyRegister.exe"
-        
-        if not dist_dir.exists():
-            raise RuntimeError(f"PyInstaller output directory not found: {dist_dir}")
-        if not exe_path.exists():
-            raise RuntimeError(f"PyInstaller executable not found: {exe_path}")
-            
-        print(f"   + PyInstaller build successful.")
-        print(f"   + Executable location: {exe_path}")
-        print(f"   + Directory contents of {dist_dir}:")
-        for item in dist_dir.iterdir():
-            print(f"     - {item.name}")
-            
+        subprocess.run(command, check=True)
+        print(f"   + PyInstaller build completed successfully")
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"PyInstaller failed with exit code {e.returncode}")
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Could not find Python executable: {PYTHON_EXE}. Ensure it's in PATH or provide full path.")
+        print(f"   ! PyInstaller build failed with exit code {e.returncode}")
+        raise
 
 def run_inno_setup():
     """Runs Inno Setup Compiler"""
-    if not INNO_COMPILER.exists():
-        raise FileNotFoundError(f"Inno Setup Compiler not found at: {INNO_COMPILER}. Please install or update path.")
-    command = [str(INNO_COMPILER), str(INSTALLER_SCRIPT_OUTPUT)]
     print(f"--> Running Inno Setup Compiler...")
-    print(f"    Command: {' '.join(command)}")
     try:
-        result = subprocess.run(command, check=True, cwd=PROJECT_ROOT)
-        print(f"   + Inno Setup build successful. Installer in: {PROJECT_ROOT / 'Output'}")
+        # Ensure Output directory exists before running Inno Setup
+        ensure_output_dir()
+        
+        # Run Inno Setup Compiler
+        subprocess.run([str(INNO_COMPILER), str(INSTALLER_SCRIPT_OUTPUT)], check=True)
+        print(f"   + Inno Setup build completed successfully")
+        
+        # Verify the installer was created
+        version = get_version()
+        installer_path = OUTPUT_DIR / f"DailyRegister_Setup_v{version}.exe"
+        if installer_path.exists():
+            print(f"   + Installer created successfully at: {installer_path}")
+        else:
+            raise FileNotFoundError(f"Installer not found at expected location: {installer_path}")
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Inno Setup Compiler failed with exit code {e.returncode}")
-
-# --- Main Execution ---
-if __name__ == "__main__":
-    try:
-        print("--- Starting Build Process ---")
-        app_version = get_version()
-        generate_installer_script(app_version)
-        run_pyinstaller(app_version)
-        run_inno_setup()
-        print("\n--- Build Process Completed Successfully! ---")
-
-    except (FileNotFoundError, ValueError, RuntimeError) as e:
-        print(f"\n--- Build Failed: {e} ---", file=sys.stderr)
-        sys.exit(1)
+        print(f"   ! Inno Setup build failed with exit code {e.returncode}")
+        raise
     except Exception as e:
-        print(f"\n--- An Unexpected Error Occurred: {e} ---", file=sys.stderr)
-        traceback.print_exc()
+        print(f"   ! Error during Inno Setup build: {e}")
+        raise
+
+def main():
+    """Main build process"""
+    try:
+        print("\n=== Starting DailyRegister Build Process ===\n")
+        
+        # Get version
+        version = get_version()
+        
+        # Generate installer script
+        generate_installer_script(version)
+        
+        # Run PyInstaller
+        run_pyinstaller(version)
+        
+        # Run Inno Setup
+        run_inno_setup()
+        
+        print("\n=== Build Process Completed Successfully ===\n")
+    except Exception as e:
+        print(f"\n=== Build Process Failed ===\nError: {e}")
+        if hasattr(e, '__traceback__'):
+            traceback.print_tb(e.__traceback__)
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()

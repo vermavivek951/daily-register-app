@@ -63,8 +63,8 @@ jobs:
     - name: Upload Release Asset
       shell: pwsh
       run: |
-        # Find the installer file
-        $installer = Get-ChildItem -Path . -Recurse -Filter "DailyRegister_Setup_${{ github.ref_name }}.exe" | Select-Object -First 1
+        # Find the installer file in the Output directory
+        $installer = Get-ChildItem -Path "Output" -Filter "DailyRegister_Setup_${{ github.ref_name }}.exe" | Select-Object -First 1
         
         if ($installer) {
           Write-Host "Found installer at: $($installer.FullName)"
@@ -82,7 +82,7 @@ jobs:
           $response = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $installer.FullName
           Write-Host "Upload successful!"
         } else {
-          Write-Host "Installer not found! Searching in all directories:"
-          Get-ChildItem -Path . -Recurse -File | ForEach-Object { Write-Host $_.FullName }
+          Write-Host "Installer not found! Searching in Output directory:"
+          Get-ChildItem -Path "Output" -Recurse -File | ForEach-Object { Write-Host $_.FullName }
           exit 1
         } 
