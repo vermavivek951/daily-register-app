@@ -21,7 +21,7 @@ jobs:
       shell: pwsh
       run: |
         # Remove 'v' prefix from tag to get version number
-        $VERSION = ${{ github.ref_name }}.TrimStart('v')
+        $VERSION = "${{ github.ref_name }}".TrimStart('v')
         # Update version.py using PowerShell
         $content = Get-Content -Path "src/utils/version.py" -Raw
         $content = $content -replace "__version__ = '.*'", "__version__ = '$VERSION'"
