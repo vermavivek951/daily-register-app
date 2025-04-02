@@ -61,11 +61,28 @@ jobs:
         prerelease: false
     
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Output/DailyRegister_Setup_${{ github.ref_name }}.exe
-        asset_name: DailyRegister_Setup_${{ github.ref_name }}.exe
-        asset_content_type: application/x-msdownload 
+      shell: pwsh
+      run: |
+        # Find the installer file
+        $installer = Get-ChildItem -Path . -Recurse -Filter "DailyRegister_Setup_${{ github.ref_name }}.exe" | Select-Object -First 1
+        
+        if ($installer) {
+          Write-Host "Found installer at: $($installer.FullName)"
+          
+          # Create the upload URL
+          $uploadUrl = "${{ steps.create_release.outputs.upload_url }}"
+          $uploadUrl = $uploadUrl -replace '\{.*\}', "?name=DailyRegister_Setup_${{ github.ref_name }}.exe"
+          
+          # Upload the file
+          $headers = @{
+            "Authorization" = "token ${{ secrets.RELEASE_TOKEN }}"
+            "Content-Type" = "application/x-msdownload"
+          }
+          
+          $response = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $installer.FullName
+          Write-Host "Upload successful!"
+        } else {
+          Write-Host "Installer not found! Searching in all directories:"
+          Get-ChildItem -Path . -Recurse -File | ForEach-Object { Write-Host $_.FullName }
+          exit 1
+        } 
