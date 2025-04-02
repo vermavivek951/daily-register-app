@@ -10,25 +10,31 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.10'
     
-    - name: Update version in version.py
-      shell: pwsh
+    - name: Debug - Show Python Environment
       run: |
-        # Remove 'v' prefix from tag to get version number
-        $VERSION = "${{ github.ref_name }}".TrimStart('v')
-        Write-Host "Updating version to: $VERSION"
-        # Update version.py using PowerShell
+        python --version
+        pip --version
+        pip list
+        echo "=== Checking PyQt6 Installation ==="
+        python -c "import PyQt6; print('PyQt6 version:', PyQt6.__version__)"
+        python -c "import PyQt6.QtCore; print('QtCore available')"
+        python -c "import PyQt6.QtWidgets; print('QtWidgets available')"
+    
+    - name: Update version
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        echo "Setting version to: $version"
         $content = Get-Content -Path "src/utils/version.py" -Raw
-        $content = $content -replace '__version__ = ".*"', "__version__ = `"$VERSION`""
+        $content = $content -replace "__version__ = \".*\"", "__version__ = \"$version\""
         Set-Content -Path "src/utils/version.py" -Value $content
-        Write-Host "Updated version in version.py"
-        Write-Host "New content:"
+        echo "Updated version.py content:"
         Get-Content -Path "src/utils/version.py"
     
     - name: Install dependencies
@@ -36,42 +42,56 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+        pip install pywin32
+        pip install inno-setup-compiler
+        pip install PyQt6
+        pip install PyQt6-Qt6
+        pip install PyQt6-sip
     
-    - name: Install Inno Setup
+    - name: Debug - Show Installed Packages
       run: |
-        choco install innosetup --yes --force
+        echo "=== Installed Packages ==="
+        pip list
+        echo "=== PyQt6 Details ==="
+        pip show PyQt6
+        pip show PyQt6-Qt6
+        pip show PyQt6-sip
     
     - name: Build executable
-      run: |
-        python build.py --version ${{ github.ref_name }}
+      run: python build.py --version ${{ github.ref_name }}
     
     - name: Debug - Show Build Output
-      shell: pwsh
       run: |
-        Write-Host "=== Build Output Debug Information ==="
-        Write-Host "Current directory: $(Get-Location)"
-        Write-Host "`nOutput directory contents:"
-        Get-ChildItem -Path "Output" -Recurse | ForEach-Object { 
-          Write-Host "  $($_.FullName)"
-          if ($_.Name -match "DailyRegister_Setup_${{ github.ref_name }}.exe") {
-            Write-Host "    >>> This is the installer we're looking for <<<"
+        echo "=== Build Output Debug Information ==="
+        echo "Current directory: $PWD"
+        echo ""
+        echo "Output directory contents:"
+        Get-ChildItem -Path "Output" -Recurse | ForEach-Object {
+          if ($_.Name -match "DailyRegister_Setup_v.*\.exe") {
+            echo "  $($_.FullName)"
+            echo "    >>> This is the installer we're looking for <<<"
+          } else {
+            echo "  $($_.FullName)"
           }
         }
-        Write-Host "`nDist directory contents:"
-        Get-ChildItem -Path "dist" -Recurse | ForEach-Object { 
-          Write-Host "  $($_.FullName)"
+        echo ""
+        echo "Dist directory contents:"
+        Get-ChildItem -Path "dist" -Recurse | ForEach-Object {
+          echo "  $($_.FullName)"
         }
-        Write-Host "`nBuild directory contents:"
-        Get-ChildItem -Path "build" -Recurse | ForEach-Object { 
-          Write-Host "  $($_.FullName)"
+        echo ""
+        echo "Build directory contents:"
+        Get-ChildItem -Path "build" -Recurse | ForEach-Object {
+          echo "  $($_.FullName)"
         }
-        Write-Host "`n=== End Debug Information ==="
+        echo ""
+        echo "=== End Debug Information ==="
     
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref_name }}
@@ -79,36 +99,11 @@ jobs:
         prerelease: false
     
     - name: Upload Release Asset
-      shell: pwsh
-      run: |
-        # Find the installer file in the Output directory
-        $installer = Get-ChildItem -Path "Output" -Filter "DailyRegister_Setup_${{ github.ref_name }}.exe" | Select-Object -First 1
-        
-        if ($installer) {
-          Write-Host "Found installer at: $($installer.FullName)"
-          
-          # Create the upload URL
-          $uploadUrl = "${{ steps.create_release.outputs.upload_url }}"
-          $uploadUrl = $uploadUrl -replace '\{.*\}', "?name=DailyRegister_Setup_${{ github.ref_name }}.exe"
-          
-          # Upload the file
-          $headers = @{
-            "Authorization" = "token ${{ secrets.RELEASE_TOKEN }}"
-            "Content-Type" = "application/x-msdownload"
-          }
-          
-          try {
-            $response = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $installer.FullName
-            Write-Host "Upload successful!"
-            Write-Host "Response: $($response | ConvertTo-Json)"
-          } catch {
-            Write-Host "Error uploading file: $_"
-            Write-Host "Status Code: $($_.Exception.Response.StatusCode.value__)"
-            Write-Host "Status Description: $($_.Exception.Response.StatusDescription)"
-            exit 1
-          }
-        } else {
-          Write-Host "Installer not found! Searching in Output directory:"
-          Get-ChildItem -Path "Output" -Recurse -File | ForEach-Object { Write-Host $_.FullName }
-          exit 1
-        } 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Output/DailyRegister_Setup_v${{ github.ref_name }}.exe
+        asset_name: DailyRegister_Setup_v${{ github.ref_name }}.exe
+        asset_content_type: application/octet-stream 
