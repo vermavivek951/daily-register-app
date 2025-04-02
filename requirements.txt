@@ -5,4 +5,5 @@ packaging>=21.0 # For version comparison in update check
 matplotlib>=3.5.0
 PyQt6>=6.4.0
 PyQt6-Qt6>=6.4.0
-PyQt6-sip>=13.4.0 
+PyQt6-sip>=13.4.0
+requests>=2.31.0 # For version checking and API calls 
