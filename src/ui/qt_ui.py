@@ -37,9 +37,105 @@ class DailyRegisterUI(QMainWindow):
         self.current_language = 'en'
         self.translations = Translations()
         
+        # Set window properties
         self.setWindowTitle("Jewellery Shop Management System")
         self.setGeometry(100, 100, 1200, 800)
-        self.setStyleSheet("QMainWindow { background-color: #f8f9fa; }") # Light background
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #f8f9fa;
+            }
+            QLabel {
+                color: #2c3e50;
+            }
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:pressed {
+                background-color: #2472a4;
+            }
+            QLineEdit, QComboBox, QDateEdit {
+                padding: 8px;
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                background-color: white;
+            }
+            QLineEdit:focus, QComboBox:focus, QDateEdit:focus {
+                border: 2px solid #3498db;
+            }
+            QTableWidget {
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                background-color: white;
+                gridline-color: #ecf0f1;
+            }
+            QTableWidget::item {
+                padding: 8px;
+            }
+            QTableWidget::item:selected {
+                background-color: #3498db;
+                color: white;
+            }
+            QHeaderView::section {
+                background-color: #f8f9fa;
+                padding: 8px;
+                border: none;
+                border-bottom: 2px solid #3498db;
+                font-weight: bold;
+            }
+            QGroupBox {
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                margin-top: 12px;
+                padding-top: 16px;
+                font-weight: bold;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+                color: #2c3e50;
+            }
+            QStatusBar {
+                background-color: #f8f9fa;
+                color: #2c3e50;
+                padding: 8px;
+                border-top: 1px solid #bdc3c7;
+            }
+            QMenuBar {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #bdc3c7;
+            }
+            QMenuBar::item {
+                padding: 8px 16px;
+                background-color: transparent;
+            }
+            QMenuBar::item:selected {
+                background-color: #3498db;
+                color: white;
+            }
+            QMenu {
+                background-color: white;
+                border: 1px solid #bdc3c7;
+                border-radius: 4px;
+                padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px;
+                border-radius: 4px;
+            }
+            QMenu::item:selected {
+                background-color: #3498db;
+                color: white;
+            }
+        """)
 
         # Initialize data structures
         self.current_directory = os.getcwd()
@@ -156,11 +252,11 @@ class DailyRegisterUI(QMainWindow):
         header = QFrame()
         header.setStyleSheet("""
             QFrame {
-                background-color: #3498db;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3498db, stop:1 #2980b9);
                 border-bottom: 2px solid #2980b9;
             }
         """)
-        header.setFixedHeight(60)
+        header.setFixedHeight(70)
         header_layout = QVBoxLayout(header)
         header_layout.setContentsMargins(0, 0, 0, 0)
         
@@ -168,9 +264,10 @@ class DailyRegisterUI(QMainWindow):
         title.setStyleSheet("""
             QLabel {
                 color: white;
-                font-size: 24px;
+                font-size: 28px;
                 font-weight: bold;
-                padding: 10px;
+                padding: 12px;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
             }
         """)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -197,6 +294,14 @@ class DailyRegisterUI(QMainWindow):
         # Create status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
+        self.status_bar.setStyleSheet("""
+            QStatusBar {
+                background-color: #f8f9fa;
+                color: #2c3e50;
+                padding: 8px;
+                border-top: 1px solid #bdc3c7;
+            }
+        """)
         self.status_bar.showMessage("Ready")
         
         # Set application style
@@ -365,8 +470,17 @@ class DailyRegisterUI(QMainWindow):
         """Create the left pane with entry forms"""
         left_pane = QWidget()
         layout = QVBoxLayout(left_pane)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(16)
+        
+        # Add a subtle shadow effect to the left pane
+        left_pane.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                border-radius: 8px;
+                border: 1px solid #bdc3c7;
+            }
+        """)
 
         # Common card style
         card_style = """
@@ -890,8 +1004,17 @@ class DailyRegisterUI(QMainWindow):
         """Create the right pane containing the transaction list and summary"""
         right_widget = QWidget()
         layout = QVBoxLayout(right_widget)
-        layout.setContentsMargins(10, 5, 10, 5)
-        layout.setSpacing(5)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(16)
+        
+        # Add a subtle shadow effect to the right pane
+        right_widget.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                border-radius: 8px;
+                border: 1px solid #bdc3c7;
+            }
+        """)
         
         # Summary Section
         summary_group = QGroupBox("Daily Summary")
@@ -1119,15 +1242,18 @@ class DailyRegisterUI(QMainWindow):
         # Transaction List Section
         transaction_header = QWidget()
         transaction_header_layout = QHBoxLayout(transaction_header)
-        transaction_header_layout.setContentsMargins(0, 5, 0, 5)
+        transaction_header_layout.setContentsMargins(0, 10, 0, 10)
         
-        # Transaction Label
+        # Transaction Label with modern style
         transaction_label = QLabel("Transaction History")
         transaction_label.setStyleSheet("""
             QLabel {
                 color: #1a1a1a;
-                font-size: 13px;
-                font-weight: bold;
+                font-size: 16px;
+                font-weight: 600;
+                padding: 0;
+                background: transparent;
+                border: none;
             }
         """)
         transaction_header_layout.addWidget(transaction_label)
@@ -1135,18 +1261,21 @@ class DailyRegisterUI(QMainWindow):
         # Add spacer
         transaction_header_layout.addStretch()
         
-        # Date Selection Widget
+        # Date Selection Widget with modern style
         date_widget = QWidget()
         date_layout = QHBoxLayout(date_widget)
         date_layout.setContentsMargins(0, 0, 0, 0)
-        date_layout.setSpacing(5)
+        date_layout.setSpacing(12)
         
-        # From Date
-        from_label = QLabel("From:")
+        # From Date with modern style
+        from_label = QLabel("From")
         from_label.setStyleSheet("""
             QLabel {
                 color: #1a1a1a;
-                font-size: 12px;
+                font-size: 13px;
+                font-weight: 500;
+                background: transparent;
+                border: none;
             }
         """)
         date_layout.addWidget(from_label)
@@ -1160,9 +1289,9 @@ class DailyRegisterUI(QMainWindow):
                 background-color: #ffffff;
                 border: 1px solid #e4e6eb;
                 border-radius: 6px;
-                padding: 8px;
+                padding: 6px 10px;
                 min-width: 120px;
-                font-size: 12px;
+                font-size: 13px;
                 color: #1a1a1a;
             }
             QDateEdit:focus {
@@ -1171,27 +1300,53 @@ class DailyRegisterUI(QMainWindow):
             }
             QDateEdit::drop-down {
                 border: none;
-                width: 25px;
-                background-color: #ffffff;
-                border-left: 1px solid #e4e6eb;
+                width: 20px;
+                background-color: transparent;
             }
             QDateEdit::down-arrow {
                 image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM1877f2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiByeD0iMiIgcnk9IjIiLz48bGluZSB4MT0iMTYiIHkxPSIyIiB4Mj0iMTYiIHkyPSI2Ii8+PHN0eWxlPi50ZXh0LWFsaWduLXJwb3Mge2ZvbnQtc2l6ZToxMnB4O308L3N0eWxlPjwvc3ZnPg==);
-                width: 16px;
-                height: 16px;
+                width: 12px;
+                height: 12px;
             }
             QDateEdit::drop-down:hover {
-                background-color: #e7f3ff;
+                background-color: #f0f2f5;
+                border-radius: 4px;
+            }
+            QCalendarWidget {
+                background-color: white;
+                border: 1px solid #e4e6eb;
+            }
+            QCalendarWidget QToolButton {
+                color: #1a1a1a;
+                background-color: transparent;
+                border: none;
+                border-radius: 4px;
+                padding: 4px;
+            }
+            QCalendarWidget QToolButton:hover {
+                background-color: #f0f2f5;
+            }
+            QCalendarWidget QMenu {
+                background-color: white;
+                border: 1px solid #e4e6eb;
+            }
+            QCalendarWidget QSpinBox {
+                border: 1px solid #e4e6eb;
+                border-radius: 4px;
+                padding: 3px;
             }
         """)
         date_layout.addWidget(self.from_date_edit)
         
-        # To Date
-        to_label = QLabel("To:")
+        # To Date with modern style
+        to_label = QLabel("To")
         to_label.setStyleSheet("""
             QLabel {
                 color: #1a1a1a;
-                font-size: 12px;
+                font-size: 13px;
+                font-weight: 500;
+                background: transparent;
+                border: none;
             }
         """)
         date_layout.addWidget(to_label)
@@ -1203,20 +1358,24 @@ class DailyRegisterUI(QMainWindow):
         self.to_date_edit.setStyleSheet(self.from_date_edit.styleSheet())
         date_layout.addWidget(self.to_date_edit)
         
-        # Load Data Button
+        # Load Data Button with modern style
         load_button = QPushButton("Load")
         load_button.setStyleSheet("""
             QPushButton {
                 background-color: #1877f2;
                 color: white;
                 border: none;
-                padding: 8px 15px;
+                padding: 6px 16px;
                 border-radius: 6px;
-                font-weight: bold;
-                font-size: 12px;
+                font-weight: 600;
+                font-size: 13px;
+                min-width: 80px;
             }
             QPushButton:hover {
                 background-color: #166fe5;
+            }
+            QPushButton:pressed {
+                background-color: #1459b3;
             }
         """)
         load_button.clicked.connect(self.load_date_range)
@@ -1238,12 +1397,12 @@ class DailyRegisterUI(QMainWindow):
                 gridline-color: #dcdde1;
                 border: 1px solid #dcdde1;
                 border-radius: 4px;
-                selection-background-color: #f5f6fa;
-                selection-color: #2c3e50;
             }
             QTableWidget::item {
                 padding: 8px;
                 border-bottom: 1px solid #f1f2f6;
+                color: #2c3e50;
+                background-color: transparent;
             }
             QTableWidget::item:selected {
                 background-color: #f5f6fa;
@@ -1258,7 +1417,7 @@ class DailyRegisterUI(QMainWindow):
                 font-weight: bold;
             }
             QTableWidget::item[type="Gold"] {
-                color: #c0392b;
+                color: #d35400;
                 font-weight: bold;
             }
             QTableWidget::item[type="Silver"] {
@@ -1379,7 +1538,7 @@ class DailyRegisterUI(QMainWindow):
                     border: none;
                     border-bottom: 2px solid #e4e6eb;
                     font-weight: bold;
-                    font-size: 13px;
+                font-size: 13px;
                 }
                 QTableWidget::item[type="Gold"] {
                     color: #d35400;
@@ -1388,8 +1547,8 @@ class DailyRegisterUI(QMainWindow):
                 QTableWidget::item[type="Silver"] {
                     color: #7f8c8d;
                     font-weight: bold;
-                }
-            """)
+            }
+        """)
             
             for transaction in transactions:
                 self.logger.debug(f"Adding transaction to table: {transaction}")
@@ -2630,7 +2789,7 @@ class DailyRegisterUI(QMainWindow):
             f"Jewellery Shop Management System\n\n"
             f"Version {APP_VERSION}\n"
             "A comprehensive solution for managing jewellery shop transactions.\n\n"
-            "© 2024 All rights reserved.")
+            "© 2025 All rights reserved.")
 
     def load_today_data(self):
         """Load transactions for today's date"""

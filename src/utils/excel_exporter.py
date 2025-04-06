@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from typing import List
-from ..models.transaction import Transaction
+from models.transaction import Transaction
 
 class ExcelExporter:
     @staticmethod
