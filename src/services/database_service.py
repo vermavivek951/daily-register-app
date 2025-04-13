@@ -98,22 +98,22 @@ class DatabaseService:
             print(f"[DatabaseService] Error saving transaction: {e}")
             return False
 
-    def delete_transaction(self, transaction):
-        """Delete a transaction from the database."""
+    def delete_transaction(self, transaction_id: int) -> bool:
+        """Delete a transaction from the database.
+        
+        Args:
+            transaction_id: The ID of the transaction to delete.
+            
+        Returns:
+            bool: True if deletion was successful, False otherwise.
+        """
         try:
+            print(f"[DatabaseService] Deleting transaction with ID: {transaction_id}")
             with sqlite3.connect(self.db_file) as conn:
                 cursor = conn.cursor()
                 
-                # Get timestamp
-                timestamp = transaction['timestamp']
-                if isinstance(timestamp, datetime):
-                    timestamp = timestamp.isoformat()
-                
                 # Delete transaction
-                cursor.execute('''
-                    DELETE FROM transactions
-                    WHERE timestamp = ?
-                ''', (timestamp,))
+                cursor.execute('DELETE FROM transactions WHERE id = ?', (transaction_id,))
                 
                 conn.commit()
                 print(f"[DatabaseService] Transaction deleted successfully")

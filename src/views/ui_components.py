@@ -21,28 +21,28 @@ class TransactionTable(QTableWidget):
         # Style the table
         self.setStyleSheet("""
             QTableWidget {
-                color: black;
-                background-color: white;
-                gridline-color: #d0d0d0;
-                border: 1px solid #c0c0c0;
+                color: #317039;
+                background-color: #F8EDD9;
+                gridline-color: #317039;
+                border: 1px solid #317039;
             }
             QTableWidget::item {
-                color: black;
+                color: #317039;
                 padding: 5px;
-                border-bottom: 1px solid #d0d0d0;
+                border-bottom: 1px solid #317039;
             }
             QTableWidget::item:alternate {
-                background-color: #f8f8f8;
+                background-color: #fff8f0;
             }
             QTableWidget::item:selected {
-                background-color: #0078D4;
-                color: white;
+                background-color: #F1BE49;
+                color: #317039;
             }
             QHeaderView::section {
-                color: black;
-                background-color: #f0f0f0;
+                color: white;
+                background-color: #317039;
                 padding: 5px;
-                border: 1px solid #c0c0c0;
+                border: 1px solid #317039;
                 font-weight: bold;
             }
         """)
@@ -88,9 +88,22 @@ class SummaryCard(QGroupBox):
         self.setLayout(self.layout)
         self.setStyleSheet("""
             QGroupBox {
-                background-color: white;
+                background-color: #F8EDD9;
+                border: 2px solid #317039;
                 border-radius: 8px;
                 padding: 10px;
+                margin-top: 1ex;
+            }
+            QGroupBox::title {
+                color: #317039;
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+                background-color: #F8EDD9;
+            }
+            QLabel {
+                color: #317039;
+                font-size: 11pt;
             }
         """)
         
@@ -114,6 +127,38 @@ class DateRangeSelector(QWidget):
         
         self.start_date.setDate(QDate.currentDate())
         self.end_date.setDate(QDate.currentDate())
+        
+        # Style the date selectors
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #F8EDD9;
+            }
+            QLabel {
+                color: #317039;
+                font-size: 11pt;
+                font-weight: bold;
+            }
+            QDateEdit {
+                background-color: #F8EDD9;
+                color: #317039;
+                border: 1px solid #317039;
+                border-radius: 4px;
+                padding: 5px;
+            }
+            QDateEdit:focus {
+                border: 2px solid #F1BE49;
+            }
+            QDateEdit::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QDateEdit::down-arrow {
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #317039;
+            }
+        """)
         
         layout.addWidget(QLabel("From:"))
         layout.addWidget(self.start_date)

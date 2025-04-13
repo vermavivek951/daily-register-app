@@ -143,28 +143,41 @@ class TransactionDisplay:
         # Set styling
         table_widget.setStyleSheet("""
             QTableWidget {
-                background-color: white;
-                gridline-color: #dcdde1;
-                border: 1px solid #dcdde1;
+                background-color: #F8EDD9;
+                gridline-color: #317039;
+                border: 1px solid #317039;
                 border-radius: 4px;
             }
             QTableWidget::item {
                 padding: 8px;
-                border-bottom: 1px solid #f1f2f6;
-                color: #2c3e50;
+                border-bottom: 1px solid #317039;
+                color: #317039;
                 background-color: transparent;
             }
             QTableWidget::item:selected {
-                background-color: #f5f6fa;
-                color: #2c3e50;
+                background-color: #F1BE49;
+                color: #317039;
             }
             QHeaderView::section {
-                background-color: #f5f6fa;
-                color: #2c3e50;
+                background-color: #317039;
+                color: white;
                 padding: 8px;
                 border: none;
-                border-bottom: 2px solid #dcdde1;
+                border-bottom: 2px solid #F8EDD9;
                 font-weight: bold;
+            }
+            QPushButton {
+                background-color: #317039;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #3d8847;
+            }
+            QPushButton:pressed {
+                background-color: #245b2b;
             }
         """)
         

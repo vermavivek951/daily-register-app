@@ -7,12 +7,15 @@ from utils.validation import (
     is_valid_float, is_valid_item_code, is_valid_item_type,
     parse_amount, parse_weight, validate_payment_amounts
 )
+from PyQt6.QtCore import QObject, pyqtSignal
+from database.db_manager import DatabaseManager
 
-class TransactionViewModel:
+class TransactionViewModel(QObject):
     """View model for handling transaction-related UI logic"""
-    def __init__(self, transaction_controller):
+    def __init__(self, db_manager=None):
         """Initialize the view model with a transaction controller."""
-        self.transaction_controller = transaction_controller
+        super().__init__()
+        self.db_manager = db_manager or DatabaseManager()
         self.current_transaction = {
             'new_items': [],
             'old_items': [],
@@ -44,7 +47,7 @@ class TransactionViewModel:
                 'type': item['type'].upper(),  # Ensure type is uppercase
                 'weight': weight,
                 'amount': amount,
-                'mark_bill': bool(item.get('mark_bill', False))
+                'is_billable': bool(item.get('is_billable', False))
             }
             
             print(f"[ViewModel] Adding new item: {new_item}")
@@ -69,54 +72,101 @@ class TransactionViewModel:
             print(f"Error adding old item: {e}")
             return False
 
-    def save_transaction(self, payment_details):
-        """Save the current transaction with payment details."""
+    def save_transaction(self, transaction_data):
+        """Save a transaction to the database."""
         try:
-            # Add payment details to current transaction
-            self.current_transaction.update({
-                'timestamp': datetime.now(),  # Use current date and time
-                'comments': payment_details.get('comments', ''),
-                'cash_amount': float(payment_details.get('cash_amount', 0)),
-                'card_amount': float(payment_details.get('card_amount', 0)),
-                'upi_amount': float(payment_details.get('upi_amount', 0))
-            })
+            # Ensure we have a valid db_manager
+            if not self.db_manager:
+                print("[ViewModel] Error: No database manager available")
+                return False
+                
+            # Format the transaction data
+            formatted_data = {
+                'timestamp': datetime.now(),
+                'comments': transaction_data.get('comments', ''),
+                'new_items': self.current_transaction.get('new_items', []),
+                'old_items': self.current_transaction.get('old_items', []),
+                'payment_details': {
+                    'cash': float(transaction_data.get('cash_amount', 0)),
+                    'card': float(transaction_data.get('card_amount', 0)),
+                    'upi': float(transaction_data.get('upi_amount', 0))
+                }
+            }
             
-            print(f"[ViewModel] Saving transaction: {self.current_transaction}")
+            print(f"[ViewModel] Saving transaction: {formatted_data}")
             
-            # Save using controller
-            if self.transaction_controller.save_transaction(self.current_transaction):
-                # Clear current transaction after successful save
+            # Save using the database manager
+            transaction_id = self.db_manager.add_transaction(formatted_data)
+            
+            if transaction_id:
+                print(f"[ViewModel] Transaction saved successfully with ID: {transaction_id}")
+                # Clear the current transaction after successful save
                 self.clear_transaction()
                 return True
+            else:
+                print("[ViewModel] Failed to save transaction")
             return False
             
         except Exception as e:
             print(f"[ViewModel] Error saving transaction: {e}")
             return False
 
-    def delete_transaction(self, transaction):
-        """Delete a transaction."""
-        try:
-            return self.transaction_controller.delete_transaction(transaction)
-        except Exception as e:
-            print(f"Error deleting transaction: {e}")
-            return False
+    def delete_transaction(self, transaction_id):
+        """Delete a transaction from the database."""
+        return self.db_manager.delete_transaction(transaction_id)
 
-    def get_transactions(self, date):
+    def get_transactions(self, start_date, end_date):
+        """Get transactions for a date range."""
+        return self.db_manager.get_transactions(start_date, end_date)
+
+    def get_transactions_by_date(self, date):
         """Get transactions for a specific date."""
+        return self.db_manager.get_transactions_by_date(date)
+
+    def get_transactions_range(self, start_date, end_date):
+        """Get transactions for a date range."""
+        return self.db_manager.get_transactions_range(start_date, end_date)
+
+    def format_transaction_for_display(self, transaction):
+        """Format a transaction for display in the UI."""
         try:
-            print(f"[ViewModel] Getting transactions for date: {date}")
-            transactions = self.transaction_controller.get_transactions_by_date(date)
-            print(f"[ViewModel] Retrieved {len(transactions)} transactions")
-            return transactions
+            # Format date and time
+            date = transaction.get('date', '')
+            time = transaction.get('time', '')
+            
+            # Format comments
+            comments = transaction.get('comments', '')
+            
+            # Format payment amounts
+            cash_amount = transaction.get('cash_amount', 0)
+            card_amount = transaction.get('card_amount', 0)
+            upi_amount = transaction.get('upi_amount', 0)
+            
+            # Format items
+            new_items = transaction.get('new_items', [])
+            old_items = transaction.get('old_items', [])
+            
+            return {
+                'id': transaction.get('id'),
+                'date': date,
+                'time': time,
+                'comments': comments,
+                'cash_amount': cash_amount,
+                'card_amount': card_amount,
+                'upi_amount': upi_amount,
+                'new_items': new_items,
+                'old_items': old_items,
+                'total_amount': transaction.get('total_amount', 0),
+                'net_amount_paid': transaction.get('net_amount_paid', 0)
+            }
         except Exception as e:
-            print(f"[ViewModel] Error getting transactions: {e}")
-            return []
+            print(f"Error formatting transaction: {e}")
+            return None
 
     def get_daily_summary(self, date):
         """Get summary for a specific date."""
         try:
-            transactions = self.get_transactions(date)
+            transactions = self.get_transactions(date, date)
             
             # Initialize totals
             summary = {
@@ -240,49 +290,148 @@ class TransactionViewModel:
                 'total_amount': 0
             }
         
-    def format_transaction_for_display(self, transaction: dict) -> List[str]:
-        """Format a transaction for display in the register table."""
+    def get_billable_items(self, date):
+        """
+        Get billable and non-billable items for a specific date, grouped by item code.
+        Returns a dictionary with 'billable' and 'non_billable' keys, each containing
+        grouped items with their totals.
+        """
         try:
-            # Get timestamp
-            timestamp = transaction['timestamp']
-            if isinstance(timestamp, str):
-                timestamp = datetime.fromisoformat(timestamp)
-            elif not isinstance(timestamp, datetime):
-                timestamp = datetime.now()  # Fallback to current time if invalid
-            time_str = timestamp.strftime('%H:%M:%S')
+            # Initialize result dictionaries
+            billable_items = {}
+            non_billable_items = {}
             
-            # Get first new item (if any)
-            new_items = transaction.get('new_items', [])
-            if new_items:
-                new_item = new_items[0]
-                code = new_item.get('code', '')
-                weight = f"{new_item.get('weight', 0):.3f}"
-                amount = f"{new_item.get('amount', 0):.2f}"
-                mark_bill = 'B' if new_item.get('mark_bill') else ''
-            else:
-                code = weight = amount = mark_bill = ''
-                
-            # Get first old item (if any)
-            old_items = transaction.get('old_items', [])
-            if old_items:
-                old_item = old_items[0]
-                old_type = old_item.get('type', '')
-                old_weight = f"{old_item.get('weight', 0):.3f}"
-                old_amount = f"{old_item.get('amount', 0):.2f}"
-            else:
-                old_type = old_weight = old_amount = ''
-                
-            return [
-                time_str,      # Time
-                code,          # Code
-                weight,        # Weight
-                amount,        # Amount
-                mark_bill,     # Mark Bill
-                old_type,      # Old Type
-                old_weight,    # Old Weight
-                old_amount     # Old Amount
-            ]
+            # Get transactions for the date
+            transactions = self.get_transactions(date, date)
+            
+            # Process each transaction
+            for transaction in transactions:
+                # Process new items
+                for item in transaction.get('new_items', []):
+                    # Get item details
+                    item_code = item.get('code', '')
+                    weight = float(item.get('weight', 0))
+                    amount = float(item.get('amount', 0))
+                    is_billable = item.get('is_billable', False)
+                    
+                    # Choose target dictionary based on billable status
+                    target_dict = billable_items if is_billable else non_billable_items
+                    
+                    # Add or update item in the appropriate dictionary
+                    if item_code not in target_dict:
+                        target_dict[item_code] = {
+                            'total_weight': 0,
+                            'total_amount': 0,
+                            'transactions': []
+                        }
+                    
+                    # Update totals
+                    target_dict[item_code]['total_weight'] += weight
+                    target_dict[item_code]['total_amount'] += amount
+                    
+                    # Add transaction details
+                    target_dict[item_code]['transactions'].append({
+                        'date': transaction.get('date', ''),
+                        'time': transaction.get('time', ''),
+                        'weight': weight,
+                        'amount': amount,
+                        'comments': transaction.get('comments', '')
+                    })
+            
+            return {
+                'billable': billable_items,
+                'non_billable': non_billable_items
+            }
             
         except Exception as e:
-            print(f"Error formatting transaction: {e}")
-            return [''] * 8 
+            print(f"Error getting billable items: {e}")
+            return {
+                'billable': {},
+                'non_billable': {}
+            }
+
+    def get_date_range_summary(self, from_date, to_date):
+        """Get summary of transactions between from_date and to_date inclusive."""
+        try:
+            transactions = self.get_transactions_range(from_date, to_date)
+            
+            summary = {
+                'new_gold_weight': 0,
+                'new_silver_weight': 0,
+                'new_amount': 0,
+                'old_gold_weight': 0,
+                'old_silver_weight': 0,
+                'old_amount': 0,
+                'cash_total': 0,
+                'card_total': 0,
+                'upi_total': 0
+            }
+            
+            for transaction in transactions:
+                # Process new items
+                for item in transaction.get('new_items', []):
+                    if 'Gold' in item.get('name', ''):
+                        summary['new_gold_weight'] += item.get('weight', 0)
+                    elif 'Silver' in item.get('name', ''):
+                        summary['new_silver_weight'] += item.get('weight', 0)
+                    summary['new_amount'] += item.get('amount', 0)
+                
+                # Process old items
+                for item in transaction.get('old_items', []):
+                    item_type = item.get('type', '').upper()
+                    if item_type in ['G', 'GOLD']:
+                        summary['old_gold_weight'] += item.get('weight', 0)
+                    elif item_type in ['S', 'SILVER']:
+                        summary['old_silver_weight'] += item.get('weight', 0)
+                    summary['old_amount'] += item.get('amount', 0)
+                
+                # Process payments
+                summary['cash_total'] += transaction.get('cash_amount', 0)
+                summary['card_total'] += transaction.get('card_amount', 0)
+                summary['upi_total'] += transaction.get('upi_amount', 0)
+            
+            return summary
+        except Exception as e:
+            print(f"Error getting summary for date range: {e}")
+            return {}
+
+    def get_billable_items_range(self, from_date, to_date):
+        """Get billable and non-billable items summary for a date range."""
+        try:
+            transactions = self.get_transactions_range(from_date, to_date)
+            
+            billable_items = {}
+            non_billable_items = {}
+            
+            for transaction in transactions:
+                for item in transaction.get('new_items', []):
+                    item_code = item.get('code', '')
+                    item_name = item.get('name', '')
+                    item_weight = item.get('weight', 0)
+                    item_amount = item.get('amount', 0)
+                    is_billable = item.get('is_billable', False)
+                    
+                    target_dict = billable_items if is_billable else non_billable_items
+                    
+                    if item_code not in target_dict:
+                        target_dict[item_code] = {
+                            'name': item_name,
+                            'total_weight': 0,
+                            'total_amount': 0,
+                            'items': []
+                        }
+                    
+                    target_dict[item_code]['total_weight'] += item_weight
+                    target_dict[item_code]['total_amount'] += item_amount
+                    target_dict[item_code]['items'].append({
+                        'weight': item_weight,
+                        'amount': item_amount
+                    })
+            
+            return {
+                'billable': billable_items,
+                'non_billable': non_billable_items
+            }
+        except Exception as e:
+            print(f"Error getting billable items for date range: {e}")
+            return {} 

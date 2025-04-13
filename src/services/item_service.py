@@ -2,43 +2,50 @@ from typing import Dict, List, Optional
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from database.db_manager import DatabaseManager
 
 class ItemService:
-    def __init__(self):
+    def __init__(self, db: Optional[DatabaseManager] = None):
+        """Initialize the item service.
+        
+        Args:
+            db: Optional database manager instance. If not provided, a new one will be created.
+        """
+        self.db = db if db is not None else DatabaseManager()
         self.db_path = Path('database/items.db')
         self.db_path.parent.mkdir(exist_ok=True)
         
         # Predefined item codes
         self.ITEM_CODES = {
             # Gold Items
-            'GCH': {'name': 'Gold Chain', 'type': 'Gold'},
-            'GBG': {'name': 'Gold Bangle', 'type': 'Gold'},
-            'GRIN': {'name': 'Gold Ring', 'type': 'Gold'},
-            'GER': {'name': 'Gold Earring', 'type': 'Gold'},
-            'GBT': {'name': 'Gold Bracelet', 'type': 'Gold'},
-            'GNK': {'name': 'Gold Necklace', 'type': 'Gold'},
-            'GPD': {'name': 'Gold Pendant', 'type': 'Gold'},
-            'GAN': {'name': 'Gold Anklet', 'type': 'Gold'},
-            'GMG': {'name': 'Gold Mangalsutra', 'type': 'Gold'},
-            'GNT': {'name': 'Gold Nath', 'type': 'Gold'},
-            'GTK': {'name': 'Gold Tikka', 'type': 'Gold'},
-            'GTC': {'name': 'Gold Toe Chain', 'type': 'Gold'},
-            'GLOC': {'name': 'Gold Locket', 'type': 'Gold'},
-            'GBALI': {'name': 'Gold Bali', 'type': 'Gold'},
-            'NP': {'name': 'Gold Nose Pin', 'type': 'Gold'},
+            'GCH': {'name': 'Gold Chain', 'type': 'G'},
+            'GBG': {'name': 'Gold Bangle', 'type': 'G'},
+            'GRIN': {'name': 'Gold Ring', 'type': 'G'},
+            'GER': {'name': 'Gold Earring', 'type': 'G'},
+            'GBT': {'name': 'Gold Bracelet', 'type': 'G'},
+            'GNK': {'name': 'Gold Necklace', 'type': 'G'},
+            'GPD': {'name': 'Gold Pendant', 'type': 'G'},
+            'GAN': {'name': 'Gold Anklet', 'type': 'G'},
+            'GMG': {'name': 'Gold Mangalsutra', 'type': 'G'},
+            'GNT': {'name': 'Gold Nath', 'type': 'G'},
+            'GTK': {'name': 'Gold Tikka', 'type': 'G'},
+            'GTC': {'name': 'Gold Toe Chain', 'type': 'G'},
+            'GLOC': {'name': 'Gold Locket', 'type': 'G'},
+            'GBALI': {'name': 'Gold Bali', 'type': 'G'},
+            'NP': {'name': 'Gold Nose Pin', 'type': 'G'},
             
             # Silver Items
-            'SCH': {'name': 'Silver Chain', 'type': 'Silver'},
-            'SBG': {'name': 'Silver Bangle', 'type': 'Silver'},
-            'SRG': {'name': 'Silver Ring', 'type': 'Silver'},
-            'SER': {'name': 'Silver Earring', 'type': 'Silver'},
-            'SBR': {'name': 'Silver Bracelet', 'type': 'Silver'},
-            'SNK': {'name': 'Silver Necklace', 'type': 'Silver'},
-            'SPD': {'name': 'Silver Pendant', 'type': 'Silver'},
-            'SAN': {'name': 'Silver Anklet', 'type': 'Silver'},
-            'SPA': {'name': 'Silver Payal', 'type': 'Silver'},
-            'STK': {'name': 'Silver Tikka', 'type': 'Silver'},
-            'STC': {'name': 'Silver Toe Chain', 'type': 'Silver'}
+            'SCH': {'name': 'Silver Chain', 'type': 'S'},
+            'SBG': {'name': 'Silver Bangle', 'type': 'S'},
+            'SRG': {'name': 'Silver Ring', 'type': 'S'},
+            'SER': {'name': 'Silver Earring', 'type': 'S'},
+            'SBR': {'name': 'Silver Bracelet', 'type': 'S'},
+            'SNK': {'name': 'Silver Necklace', 'type': 'S'},
+            'SPD': {'name': 'Silver Pendant', 'type': 'S'},
+            'SAN': {'name': 'Silver Anklet', 'type': 'S'},
+            'SPA': {'name': 'Silver Payal', 'type': 'S'},
+            'STK': {'name': 'Silver Tikka', 'type': 'S'},
+            'STC': {'name': 'Silver Toe Chain', 'type': 'S'}
         }
         
         self.init_db()
@@ -55,7 +62,7 @@ class ItemService:
                 CREATE TABLE IF NOT EXISTS items (
                     code TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
-                    type TEXT NOT NULL,  -- 'Gold' or 'Silver'
+                    type TEXT NOT NULL,  -- 'G' or 'S'
                     last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -83,11 +90,27 @@ class ItemService:
                 
     def get_item_details(self, code: str) -> Optional[dict]:
         """Get item details from cache."""
-        return self._items_cache.get(code)
+        if not code or code not in self._items_cache:
+            return None
+            
+        item = self._items_cache[code].copy()
+        if item['type'] not in ['G', 'S']:  # Gold or Silver
+            return None
+            
+        return item
         
     def add_item(self, code: str, name: str, type_: str) -> bool:
         """Add a new item or update existing one."""
         try:
+            if not code or not name or not type_:
+                return False
+                
+            if type_ not in ['G', 'S']:  # Gold or Silver
+                # Remove from cache if exists with invalid type
+                if code in self._items_cache:
+                    del self._items_cache[code]
+                return False
+                
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
@@ -98,6 +121,7 @@ class ItemService:
                 
             # Update cache
             self._items_cache[code] = {
+                'code': code,
                 'name': name,
                 'type': type_,
                 'last_used': datetime.now().isoformat()
@@ -135,9 +159,12 @@ class ItemService:
         # Sort by last used (most recent first), with empty strings for None values
         return sorted(suggestions, key=lambda x: x.get('last_used', '') or '', reverse=True)
         
-    def update_last_used(self, code: str):
+    def update_last_used(self, code: str) -> bool:
         """Update last used timestamp for an item."""
         try:
+            if not code or code not in self._items_cache:
+                return False
+                
             current_time = datetime.now().isoformat()
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
@@ -149,10 +176,11 @@ class ItemService:
                 conn.commit()
                 
             # Update cache
-            if code in self._items_cache:
-                self._items_cache[code]['last_used'] = current_time
+            self._items_cache[code]['last_used'] = current_time
+            return True
         except Exception as e:
             print(f"Error updating last used: {e}")
+            return False
             
     def get_recent_items(self, limit: int = 10) -> List[Dict]:
         """Get recently used items."""

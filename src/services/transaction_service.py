@@ -3,23 +3,42 @@ from typing import Dict, List, Optional
 
 from models.transaction import Transaction, NewItem, OldItem
 from database.db_manager import DatabaseManager
+from services.item_service import ItemService
 
 class TransactionService:
     """Service for handling transaction operations."""
     
-    def __init__(self):
-        self.db = DatabaseManager()
+    def __init__(self, db: Optional[DatabaseManager] = None):
+        """Initialize the transaction service.
+        
+        Args:
+            db: Optional database manager instance. If not provided, a new one will be created.
+        """
+        self.db = db if db is not None else DatabaseManager()
+        self.item_service = ItemService(db)
         self.current_transaction = {
             'new_items': [],
             'old_items': [],
-            'payment_details': {}
+            'payment_details': {},
+            'comments': ''
         }
     
     def add_new_item(self, code: str, weight: float, amount: float, is_billable: bool = False) -> bool:
         """Add a new item to the current transaction."""
         try:
+            # Validate item code
+            if not code or len(code) < 2:
+                return False
+                
+            # Get item details from service
+            item_details = self.item_service.get_item_details(code)
+            if not item_details:
+                return False
+                
             item = {
                 'code': code,
+                'name': item_details['name'],
+                'type': item_details['type'],
                 'weight': weight,
                 'amount': amount,
                 'is_billable': is_billable,
@@ -28,12 +47,15 @@ class TransactionService:
             self.current_transaction['new_items'].append(item)
             return True
         except Exception as e:
-            # Log error
+            print(f"Error adding new item: {e}")
             return False
     
     def add_old_item(self, item_type: str, weight: float, amount: float) -> bool:
         """Add an old item to the current transaction."""
         try:
+            if item_type not in ['G', 'S']:
+                return False
+                
             item = {
                 'type': item_type,
                 'weight': weight,
@@ -43,7 +65,7 @@ class TransactionService:
             self.current_transaction['old_items'].append(item)
             return True
         except Exception as e:
-            # Log error
+            print(f"Error adding old item: {e}")
             return False
     
     def remove_old_item(self, item: Dict) -> bool:
@@ -54,27 +76,64 @@ class TransactionService:
         except ValueError:
             return False
     
-    def save_transaction(self, payment_details: Dict[str, float]) -> bool:
+    def set_comments(self, comments: str):
+        """Set comments for the current transaction."""
+        self.current_transaction['comments'] = comments
+    
+    def save_transaction(self, payment_details: Dict[str, float], comments: str = None) -> bool:
         """Save the current transaction to the database."""
         try:
+            if not self.current_transaction['new_items'] and not self.current_transaction['old_items']:
+                return False
+                
+            # Validate payment details
+            for amount in payment_details.values():
+                if amount < 0:
+                    return False
+                    
             self.current_transaction['payment_details'] = payment_details
             self.current_transaction['timestamp'] = datetime.now()
             
+            # Set comments if provided
+            if comments is not None:
+                self.current_transaction['comments'] = comments
+            
             # Save to database
-            success = self.db.save_transaction(self.current_transaction)
+            transaction_id = self.db.add_transaction(self.current_transaction)
             
-            if success:
+            if transaction_id:
                 # Clear current transaction
-                self.current_transaction = {
-                    'new_items': [],
-                    'old_items': [],
-                    'payment_details': {}
-                }
-            
-            return success
-        except Exception as e:
-            # Log error
+                self.clear_current_transaction()
+                return True
             return False
+            
+        except Exception as e:
+            print(f"Error saving transaction: {e}")
+            return False
+            
+    def delete_transaction(self, transaction_id: int) -> bool:
+        """Delete a transaction by ID.
+        
+        Args:
+            transaction_id: The ID of the transaction to delete.
+            
+        Returns:
+            bool: True if the deletion was successful, False otherwise.
+        """
+        try:
+            return self.db.delete_transaction(transaction_id)
+        except Exception as e:
+            print(f"Error deleting transaction: {e}")
+            return False
+    
+    def clear_current_transaction(self):
+        """Clear the current transaction."""
+        self.current_transaction = {
+            'new_items': [],
+            'old_items': [],
+            'payment_details': {},
+            'comments': ''
+        }
     
     def get_daily_summary(self, date: datetime) -> Dict[str, Dict[str, float]]:
         """Get the summary for a specific date."""
@@ -89,13 +148,12 @@ class TransactionService:
                 'payments': {'cash': 0.0, 'card': 0.0, 'upi': 0.0}
             }
     
-    def get_transactions(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
+    def get_transactions(self, start_date: datetime, end_date: datetime) -> List[Dict]:
         """Get transactions for a date range."""
         try:
-            transactions_data = self.db.get_transactions(start_date, end_date)
-            return [Transaction.from_dict(data) for data in transactions_data]
+            return self.db.get_transactions_by_date_range(start_date, end_date)
         except Exception as e:
-            # Log error
+            print(f"Error getting transactions: {e}")
             return []
     
     def get_current_transaction(self) -> Dict:

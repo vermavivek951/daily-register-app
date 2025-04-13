@@ -1,18 +1,26 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+import os
 
 from models.transaction import Transaction, NewItem, OldItem
 from services.transaction_service import TransactionService
-from services.database_service import DatabaseService
+from database.db_manager import DatabaseManager
 from services.item_service import ItemService
 
 class TransactionController:
     """Controller for handling transaction operations."""
     
-    def __init__(self, db_service=None):
-        """Initialize the controller with a database service."""
+    def __init__(self, db_manager=None):
+        """Initialize the controller with a database manager."""
         self.service = TransactionService()
-        self.db_service = db_service or DatabaseService()
+        
+        # Get the database path from environment or use default
+        app_data_dir = os.path.join(os.getenv('APPDATA', ''), 'DailyRegister')
+        os.makedirs(app_data_dir, exist_ok=True)
+        db_path = os.path.join(app_data_dir, 'transactions.db')
+        
+        # Initialize database manager with the path
+        self.db_manager = db_manager or DatabaseManager(db_path)
         self.current_transaction = Transaction()
         self.item_service = ItemService()
     
@@ -126,16 +134,24 @@ class TransactionController:
     def save_transaction(self, transaction: Dict[str, Any]) -> bool:
         """Save a transaction to the database."""
         try:
-            # Pass the transaction dictionary directly to the database service
-            return self.db_service.save_transaction(transaction)
+            # Pass the transaction dictionary directly to the database manager
+            return self.db_manager.save_transaction(transaction)
         except Exception as e:
             print(f"[TransactionController] Error saving transaction: {e}")
             return False
     
-    def delete_transaction(self, transaction: Dict[str, Any]) -> bool:
-        """Delete a transaction from the database."""
+    def delete_transaction(self, transaction_id: int) -> bool:
+        """Delete a transaction from the database.
+        
+        Args:
+            transaction_id: The ID of the transaction to delete.
+            
+        Returns:
+            bool: True if deletion was successful, False otherwise.
+        """
         try:
-            return self.db_service.delete_transaction(transaction)
+            print(f"[TransactionController] Deleting transaction with ID: {transaction_id}")
+            return self.db_manager.delete_transaction(transaction_id)
         except Exception as e:
             print(f"[TransactionController] Error deleting transaction: {e}")
             return False
@@ -190,7 +206,7 @@ class TransactionController:
     def get_transactions(self, start_date: datetime, end_date: datetime) -> List[Dict]:
         """Get transactions for a date range."""
         try:
-            return self.db_service.get_transactions(start_date, end_date)
+            return self.db_manager.get_transactions(start_date, end_date)
         except Exception as e:
             print(f"Error getting transactions: {e}")
             return []
@@ -219,7 +235,7 @@ class TransactionController:
     def backup_database(self, backup_path: str) -> bool:
         """Backup the database."""
         try:
-            return self.db_service.backup(backup_path)
+            return self.db_manager.backup(backup_path)
         except Exception as e:
             print(f"Error backing up database: {e}")
             return False
@@ -227,7 +243,7 @@ class TransactionController:
     def restore_database(self, backup_path: str) -> bool:
         """Restore the database from backup."""
         try:
-            return self.db_service.restore(backup_path)
+            return self.db_manager.restore(backup_path)
         except Exception as e:
             print(f"Error restoring database: {e}")
             return False
@@ -259,7 +275,7 @@ class TransactionController:
             # Create start and end datetime for the given date
             start_date = datetime(date.year, date.month, date.day, 0, 0, 0)
             end_date = datetime(date.year, date.month, date.day, 23, 59, 59)
-            return self.db_service.get_transactions(start_date, end_date)
+            return self.db_manager.get_transactions(start_date, end_date)
         except Exception as e:
             print(f"Error getting transactions for date: {e}")
             return []
@@ -267,7 +283,15 @@ class TransactionController:
     def get_transactions_by_date(self, date) -> List[Dict[str, Any]]:
         """Get all transactions for a specific date."""
         try:
-            return self.db_service.get_transactions_by_date(date)
+            return self.db_manager.get_transactions_by_date(date)
         except Exception as e:
             print(f"[TransactionController] Error getting transactions: {e}")
-            return [] 
+            return []
+
+    def get_transactions_range(self, from_date, to_date):
+        """Get all transactions between from_date and to_date inclusive."""
+        try:
+            return self.db_manager.get_transactions_range(from_date, to_date)
+        except Exception as e:
+            print(f"Error getting transactions for date range: {e}")
+            raise 

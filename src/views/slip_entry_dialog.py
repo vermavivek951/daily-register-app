@@ -22,6 +22,78 @@ class SlipEntryDialog(QDialog):
         self.setWindowTitle("New Slip Entry")
         self.setMinimumWidth(800)
         
+        # Apply global styles
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #F8EDD9;
+            }
+            QLabel {
+                color: #317039;
+                font-size: 11pt;
+                font-weight: bold;
+            }
+            QLineEdit {
+                background-color: #F8EDD9;
+                color: #317039;
+                border: 1px solid #317039;
+                border-radius: 3px;
+                padding: 5px;
+                font-size: 11pt;
+                selection-background-color: #F1BE49;
+                selection-color: #317039;
+            }
+            QLineEdit:focus {
+                border: 2px solid #F1BE49;
+            }
+            QLineEdit::placeholder {
+                color: #CC4B24;
+            }
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #317039;
+                border-radius: 5px;
+                margin-top: 1em;
+                padding: 15px;
+                background-color: #F8EDD9;
+            }
+            QGroupBox::title {
+                color: #317039;
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+                background-color: #F8EDD9;
+                font-size: 12pt;
+            }
+            QPushButton {
+                background-color: #317039;
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 4px;
+                font-weight: bold;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #3d8847;
+            }
+            QPushButton:pressed {
+                background-color: #245b2b;
+            }
+            QListWidget {
+                background-color: #F8EDD9;
+                border: 1px solid #317039;
+                border-radius: 4px;
+            }
+            QListWidget::item {
+                color: #317039;
+                padding: 5px;
+            }
+            QListWidget::item:selected {
+                background-color: #F1BE49;
+                color: #317039;
+            }
+        """)
+        
         layout = QVBoxLayout(self)
         
         # New Items Section
@@ -72,7 +144,7 @@ class SlipEntryDialog(QDialog):
         old_items_group = QGroupBox("Old Item Entry")
         old_items_layout = QHBoxLayout()
         
-        # Type input (changed from combo to text)
+        # Type input
         type_layout = QVBoxLayout()
         type_label = QLabel("Type:")
         self.type_input = QLineEdit()

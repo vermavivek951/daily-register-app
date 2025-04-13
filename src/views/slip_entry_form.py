@@ -25,7 +25,7 @@ class SlipEntryForm(QWidget):
         self.new_items = []
         self.old_items = []
         self.has_new_items = False  # Track if at least one new item is added
-        self.has_old_items = False  # Track if at least one old item is added
+        self.has_old_items = False
         
         # Item code mappings
         self.ITEM_CODES = {
@@ -68,57 +68,63 @@ class SlipEntryForm(QWidget):
         # Set window background color
         self.setStyleSheet("""
             QWidget {
-                background-color: #F0F0F0;
+                background-color: #F8EDD9;
             }
             QLabel {
-                color: #000000;
+                color: #317039;
                 font-weight: bold;
                 font-size: 11pt;
             }
             QLineEdit, QComboBox {
-                background-color: white;
-                color: #000000;
-                border: 1px solid #CCCCCC;
+                background-color: #F8EDD9;
+                color: #317039;
+                border: 1px solid #317039;
                 border-radius: 3px;
                 padding: 5px;
                 font-size: 11pt;
-                selection-background-color: #0078D4;
-                selection-color: white;
+                selection-background-color: #F1BE49;
+                selection-color: #317039;
             }
             QLineEdit:focus, QComboBox:focus {
-                border: 2px solid #0078D4;
-                background-color: #FFFFFF;
+                border: 2px solid #F1BE49;
+                background-color: #F8EDD9;
             }
             QLineEdit::placeholder {
-                color: #666666;
+                color: #CC4B24;
             }
             QGroupBox {
                 font-weight: bold;
-                border: 2px solid #0078D4;
+                border: 2px solid #317039;
                 border-radius: 5px;
                 margin-top: 1em;
                 padding: 15px;
-                background-color: white;
+                background-color: #F8EDD9;
             }
             QGroupBox::title {
-                color: #0078D4;
+                color: #317039;
                 subcontrol-origin: margin;
                 left: 10px;
                 padding: 0 5px;
-                background-color: white;
+                background-color: #F8EDD9;
                 font-size: 12pt;
             }
             QCheckBox {
                 font-size: 11pt;
-                color: #000000;
+                color: #317039;
             }
             QCheckBox::indicator {
                 width: 18px;
                 height: 18px;
+                border: 2px solid #317039;
+                border-radius: 3px;
+                background-color: #F8EDD9;
             }
             QCheckBox::indicator:checked {
-                background-color: #0078D4;
-                border: 2px solid #0078D4;
+                background-color: #317039;
+                border: 2px solid #317039;
+            }
+            QCheckBox::indicator:hover {
+                border: 2px solid #F1BE49;
             }
         """)
 
@@ -128,60 +134,60 @@ class SlipEntryForm(QWidget):
         # New Items Section
         new_items_group = QGroupBox("New Item Entry")
         new_items_layout = QHBoxLayout()  # Changed back to horizontal
-        new_items_layout.setSpacing(15)  # Increased spacing
+        new_items_layout.setSpacing(30)  # Increased spacing
         
         # Code input
         code_layout = QVBoxLayout()
-        code_label = QLabel("Item Code:")
+        code_label = QLabel("Code")
         code_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.code_input = QLineEdit()
-        self.code_input.setPlaceholderText("Enter item code")
-        self.code_input.setFixedWidth(120)
+        self.code_input.setPlaceholderText("Code")
+        self.code_input.setFixedWidth(60)
         code_layout.addWidget(code_label)
         code_layout.addWidget(self.code_input)
         new_items_layout.addLayout(code_layout)
         
         # Name input
         name_layout = QVBoxLayout()
-        name_label = QLabel("Item Name:")
+        name_label = QLabel("Item Name")
         name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("Enter item name")
-        self.name_input.setFixedWidth(200)
+        self.name_input.setPlaceholderText("Item name")
+        self.name_input.setFixedWidth(100)
         name_layout.addWidget(name_label)
         name_layout.addWidget(self.name_input)
         new_items_layout.addLayout(name_layout)
         
         # Weight input
         weight_layout = QVBoxLayout()
-        weight_label = QLabel("Weight (g):")
+        weight_label = QLabel("Weight")
         weight_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.weight_input = QLineEdit()
         self.weight_input.setPlaceholderText("Enter weight")
-        self.weight_input.setFixedWidth(120)
+        self.weight_input.setFixedWidth(80)
         weight_layout.addWidget(weight_label)
         weight_layout.addWidget(self.weight_input)
         new_items_layout.addLayout(weight_layout)
         
         # Amount input
         amount_layout = QVBoxLayout()
-        amount_label = QLabel("Amount (₹):")
+        amount_label = QLabel("Amount")
         amount_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.amount_input = QLineEdit()
         self.amount_input.setPlaceholderText("Enter amount")
-        self.amount_input.setFixedWidth(120)
+        self.amount_input.setFixedWidth(100)
         amount_layout.addWidget(amount_label)
         amount_layout.addWidget(self.amount_input)
         new_items_layout.addLayout(amount_layout)
         
         # Mark Bill input
         mark_bill_layout = QVBoxLayout()
-        mark_bill_label = QLabel("Mark Bill:")
+        mark_bill_label = QLabel("Mark Bill")
         mark_bill_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.mark_bill_input = QLineEdit()
-        self.mark_bill_input.setPlaceholderText("B/b or leave empty")
+        self.mark_bill_input.setPlaceholderText("B/b")
         self.mark_bill_input.setMaxLength(1)
-        self.mark_bill_input.setFixedWidth(120)
+        self.mark_bill_input.setFixedWidth(40)
         mark_bill_layout.addWidget(mark_bill_label)
         mark_bill_layout.addWidget(self.mark_bill_input)
         new_items_layout.addLayout(mark_bill_layout)
@@ -196,19 +202,19 @@ class SlipEntryForm(QWidget):
         
         # Type selection
         type_layout = QVBoxLayout()
-        type_label = QLabel("Item Type:")
+        type_label = QLabel("Item Type")
         type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.type_input = QLineEdit()
         self.type_input.setPlaceholderText("G/S")
         self.type_input.setMaxLength(1)
-        self.type_input.setFixedWidth(120)
+        self.type_input.setFixedWidth(60)  # Reduced from 120 to 80
         type_layout.addWidget(type_label)
         type_layout.addWidget(self.type_input)
         old_items_layout.addLayout(type_layout)
         
         # Weight input
         old_weight_layout = QVBoxLayout()
-        old_weight_label = QLabel("Weight (g):")
+        old_weight_label = QLabel("Weight (gm)")
         old_weight_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.old_weight_input = QLineEdit()
         self.old_weight_input.setPlaceholderText("Enter weight")
@@ -219,7 +225,7 @@ class SlipEntryForm(QWidget):
         
         # Amount input
         old_amount_layout = QVBoxLayout()
-        old_amount_label = QLabel("Amount (₹):")
+        old_amount_label = QLabel("Amount (₹)")
         old_amount_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.old_amount_input = QLineEdit()
         self.old_amount_input.setPlaceholderText("Enter amount")
@@ -239,7 +245,7 @@ class SlipEntryForm(QWidget):
         # Payment inputs
         for payment_type in ["Cash", "Card", "UPI"]:
             payment_layout_col = QVBoxLayout()
-            label = QLabel(f"{payment_type} Amount (₹):")
+            label = QLabel(f"{payment_type} (₹)")
             label.setAlignment(Qt.AlignmentFlag.AlignLeft)
             input_field = QLineEdit()
             input_field.setPlaceholderText("0.00")
@@ -251,10 +257,10 @@ class SlipEntryForm(QWidget):
         
         # Comments section
         comments_layout = QVBoxLayout()
-        comments_label = QLabel("Comments:")
+        comments_label = QLabel("Comments")
         comments_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.comments_input = QLineEdit()
-        self.comments_input.setPlaceholderText("Enter any comments")
+        self.comments_input.setPlaceholderText("Enter comments")
         comments_layout.addWidget(comments_label)
         comments_layout.addWidget(self.comments_input)
         payment_layout.addLayout(comments_layout)
@@ -267,8 +273,8 @@ class SlipEntryForm(QWidget):
         
         # Set margins and spacing for better appearance
         main_layout.setContentsMargins(15, 15, 15, 15)
-        main_layout.setSpacing(15)
-        form_layout.setSpacing(15)
+        main_layout.setSpacing(20)
+        form_layout.setSpacing(20)
         
         # Set size policies for better resizing behavior
         for group in [new_items_group, old_items_group, payment_group]:
@@ -460,7 +466,7 @@ class SlipEntryForm(QWidget):
             'name': name,
             'weight': weight,
             'amount': amount,
-            'mark_bill': False  # Default to False, will be updated in on_mark_bill_enter
+            'is_billable': False  # Default to False, will be updated in on_mark_bill_enter
         }
         
         print(f"Moving to mark bill")
@@ -501,7 +507,7 @@ class SlipEntryForm(QWidget):
             'name': name,
             'weight': weight,
             'amount': amount,
-            'mark_bill': mark_bill == 'B'
+            'is_billable': mark_bill == 'B'
         }
         
         print(f"Storing new item: {item}")
@@ -685,6 +691,9 @@ class SlipEntryForm(QWidget):
     def on_comments_enter(self):
         """Handle comments entry."""
         try:
+            if not self.view_model:
+                raise ValueError("View model not initialized")
+                
             comments = self.comments_input.text().strip()
             print("=== Comments Entry ===")
             print(f"Comments entered: {comments}")
@@ -707,12 +716,14 @@ class SlipEntryForm(QWidget):
             print("Adding new items to view model...")
             for item in self.new_items:
                 print(f"Adding new item: {item}")
-                self.view_model.add_new_item(item)
+                if not self.view_model.add_new_item(item):
+                    raise ValueError(f"Failed to add new item: {item}")
                 
             print("Adding old items to view model...")
             for item in self.old_items:
                 print(f"Adding old item: {item}")
-                self.view_model.add_old_item(item)
+                if not self.view_model.add_old_item(item):
+                    raise ValueError(f"Failed to add old item: {item}")
                 
             # Save transaction
             print("Saving transaction...")
@@ -751,7 +762,7 @@ class SlipEntryForm(QWidget):
                 'type': item_type,  # Add type field
                 'weight': weight,
                 'amount': amount,
-                'mark_bill': mark_bill
+                'is_billable': mark_bill  # Changed from mark_bill to is_billable
             }
             
             print(f"[SlipEntryForm] Adding new item: {new_item}")
