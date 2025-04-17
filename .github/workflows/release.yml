@@ -63,13 +63,18 @@ jobs:
       run: |
         if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
           Write-Host "Inno Setup is installed correctly"
-          $output = & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /? 2>&1
-          Write-Host "Inno Setup help output:"
-          $output | ForEach-Object { Write-Host $_ }
-          if ($output -match "Inno Setup (\d+\.\d+)") {
-            Write-Host "Inno Setup version: $($matches[1])"
-          } else {
-            Write-Host "Could not extract version number, but Inno Setup is installed"
+          try {
+            $output = & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /? 2>&1 | Out-String
+            Write-Host "Inno Setup help output:"
+            Write-Host $output
+            if ($output -match "Inno Setup (\d+)") {
+              Write-Host "Inno Setup version: $($matches[1])"
+            } else {
+              Write-Host "Could not extract version number, but Inno Setup is installed"
+            }
+          } catch {
+            Write-Host "Error checking Inno Setup version: $_"
+            Write-Host "Inno Setup is still installed and available for use"
           }
         } else {
           Write-Host "Inno Setup is not installed correctly"
