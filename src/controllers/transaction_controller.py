@@ -28,14 +28,14 @@ class TransactionController:
         """Validate item code format."""
         if not code:
             return False
-        # Code should start with G or S for Gold/Silver
-        return code.startswith(('G', 'S'))
+        # Code should be in our predefined list
+        return code.upper() in self.item_service.ITEM_CODES
     
     def validate_item_type(self, type_: str) -> bool:
         """Validate item type."""
         if not type_:
             return False
-        return type_.upper() in ['G', 'S']
+        return type_.upper() in ['G', 'S', 'O']  # Gold, Silver, or Other
     
     def validate_amount(self, amount: float) -> bool:
         """Validate amount value."""
@@ -49,7 +49,7 @@ class TransactionController:
         """Add a new item to the current transaction."""
         try:
             if not self.validate_item_code(code):
-                raise ValueError("Invalid item code. Must start with G or S")
+                raise ValueError("Invalid item code. Must be in predefined list")
                 
             if not self.validate_weight(weight):
                 raise ValueError("Weight must be greater than 0")
@@ -75,7 +75,7 @@ class TransactionController:
         """Add an old item to the current transaction."""
         try:
             if not self.validate_item_type(item_type):
-                raise ValueError("Invalid item type. Must be Gold or Silver")
+                raise ValueError("Invalid item type. Must be Gold, Silver, or Other")
                 
             if not self.validate_weight(weight):
                 raise ValueError("Weight must be greater than 0")

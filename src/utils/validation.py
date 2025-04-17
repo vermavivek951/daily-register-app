@@ -11,16 +11,18 @@ def is_valid_float(value: Union[str, float]) -> bool:
         return False
 
 def is_valid_item_code(code: str) -> bool:
-    """Check if an item code is valid (starts with G or S)."""
+    """Check if an item code is valid (exists in predefined list)."""
     if not code:
         return False
-    return code.upper().startswith(('G', 'S'))
+    from services.item_service import ItemService
+    item_service = ItemService()
+    return code.upper() in item_service.ITEM_CODES
 
 def is_valid_item_type(type_str: str) -> bool:
-    """Check if an item type is valid (G or S)."""
+    """Check if an item type is valid (G, S, or O)."""
     if not type_str:
         return False
-    return type_str.upper() in ('G', 'S')
+    return type_str.upper() in ('G', 'S', 'O')
 
 def parse_amount(amount_str: Union[str, float, int]) -> Optional[float]:
     """Parse and validate an amount value."""

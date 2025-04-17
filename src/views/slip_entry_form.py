@@ -9,6 +9,7 @@ from utils.validation import (
     is_valid_float, is_valid_item_code, is_valid_item_type,
     parse_amount, parse_weight, validate_payment_amounts
 )
+from services.item_service import ItemService
 
 class SlipEntryForm(QWidget):
     """Reusable component for slip entry form."""
@@ -22,43 +23,13 @@ class SlipEntryForm(QWidget):
     def __init__(self, view_model=None, parent=None):
         super().__init__(parent)
         self.view_model = view_model
+        self.item_service = ItemService()  # Add ItemService instance
+        
+        # Initialize lists to store items
         self.new_items = []
         self.old_items = []
-        self.has_new_items = False  # Track if at least one new item is added
+        self.has_new_items = False
         self.has_old_items = False
-        
-        # Item code mappings
-        self.ITEM_CODES = {
-            # Gold Items
-            'GCH': {'name': 'Gold Chain', 'type': 'Gold'},
-            'GBG': {'name': 'Gold Bangle', 'type': 'Gold'},
-            'GRIN': {'name': 'Gold Ring', 'type': 'Gold'},
-            'GER': {'name': 'Gold Earring', 'type': 'Gold'},
-            'GBT': {'name': 'Gold Bracelet', 'type': 'Gold'},
-            'GNK': {'name': 'Gold Necklace', 'type': 'Gold'},
-            'GPD': {'name': 'Gold Pendant', 'type': 'Gold'},
-            'GAN': {'name': 'Gold Anklet', 'type': 'Gold'},
-            'GMG': {'name': 'Gold Mangalsutra', 'type': 'Gold'},
-            'GNT': {'name': 'Gold Nath', 'type': 'Gold'},
-            'GTK': {'name': 'Gold Tikka', 'type': 'Gold'},
-            'GTC': {'name': 'Gold Toe Chain', 'type': 'Gold'},
-            'GLOC': {'name': 'Gold Locket', 'type': 'Gold'},
-            'GBALI': {'name': 'Gold Bali', 'type': 'Gold'},
-            'NP': {'name': 'Gold Nose Pin', 'type': 'Gold'},
-            
-            # Silver Items
-            'SCH': {'name': 'Silver Chain', 'type': 'Silver'},
-            'SBG': {'name': 'Silver Bangle', 'type': 'Silver'},
-            'SRG': {'name': 'Silver Ring', 'type': 'Silver'},
-            'SER': {'name': 'Silver Earring', 'type': 'Silver'},
-            'SBR': {'name': 'Silver Bracelet', 'type': 'Silver'},
-            'SNK': {'name': 'Silver Necklace', 'type': 'Silver'},
-            'SPD': {'name': 'Silver Pendant', 'type': 'Silver'},
-            'SAN': {'name': 'Silver Anklet', 'type': 'Silver'},
-            'SPA': {'name': 'Silver Payal', 'type': 'Silver'},
-            'STK': {'name': 'Silver Tikka', 'type': 'Silver'},
-            'STC': {'name': 'Silver Toe Chain', 'type': 'Silver'}
-        }
         
         self.setup_ui()
         self.connect_signals()
@@ -357,7 +328,7 @@ class SlipEntryForm(QWidget):
     def get_item_name_from_code(self, code: str) -> str:
         """Get item name based on item code."""
         code = code.upper()  # Convert to uppercase for case-insensitive matching
-        item_info = self.ITEM_CODES.get(code)
+        item_info = self.item_service.get_item_details(code)
         if item_info:
             return item_info['name']
         return ''  # Return empty string if code not found
@@ -378,14 +349,7 @@ class SlipEntryForm(QWidget):
                 self.type_input.setFocus()
             return
             
-        if not is_valid_item_code(code):
-            print("Invalid code format - showing warning")
-            QMessageBox.warning(self, "Invalid Code", "Item code must start with 'G' or 'S'")
-            self.code_input.setFocus()
-            return
-            
-        # Check if the code exists in our mappings
-        if code not in self.ITEM_CODES:
+        if not self.item_service.get_item_details(code):
             print("Unknown item code - showing warning")
             QMessageBox.warning(self, "Unknown Code", "This item code is not recognized")
             self.code_input.setFocus()

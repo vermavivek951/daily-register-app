@@ -859,6 +859,12 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
         
+        # Settings Menu
+        settings_menu = menubar.addMenu('Settings')
+        item_codes_action = QAction('Item Codes', self)
+        item_codes_action.triggered.connect(self.show_settings_dialog)
+        settings_menu.addAction(item_codes_action)
+        
         # Reports Menu
         reports_menu = menubar.addMenu('Reports')
         daily_report = QAction('Daily Report', self)
@@ -1777,3 +1783,13 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Error saving transaction: {e}")
             QMessageBox.critical(self, "Error", f"An error occurred while saving the transaction: {str(e)}")
+
+    def show_settings_dialog(self):
+        """Show the settings dialog."""
+        from views.settings_dialog import SettingsDialog
+        settings_dialog = SettingsDialog(self)
+        if settings_dialog.exec() == QDialog.DialogCode.Accepted:
+            # Refresh the item service to load any new items
+            self.slip_form.item_service._load_cache()
+            # Refresh the register view to update any item-related displays
+            self.refresh_register_view()
