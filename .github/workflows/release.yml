@@ -63,7 +63,8 @@ jobs:
       run: |
         if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
           Write-Host "Inno Setup is installed correctly"
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /?
+          $isccVersion = & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /? 2>&1 | Select-String "Inno Setup (\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value }
+          Write-Host "Inno Setup version: $isccVersion"
         } else {
           Write-Host "Inno Setup is not installed correctly"
           exit 1
