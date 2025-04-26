@@ -359,7 +359,7 @@ class TransactionViewModel(QObject):
         """Get summary of transactions between from_date and to_date inclusive."""
         try:
             transactions = self.get_transactions_range(from_date, to_date)
-            
+            print("[TRANSACTIONS][VIEWMODELS]fetched transactions are: " + str(transactions))
             summary = {
                 'new_gold_weight': 0,
                 'new_silver_weight': 0,
@@ -375,9 +375,9 @@ class TransactionViewModel(QObject):
             for transaction in transactions:
                 # Process new items
                 for item in transaction.get('new_items', []):
-                    if 'Gold' in item.get('name', ''):
+                    if 'G' in item.get('type', ''):
                         summary['new_gold_weight'] += item.get('weight', 0)
-                    elif 'Silver' in item.get('name', ''):
+                    elif 'S' in item.get('type', ''):
                         summary['new_silver_weight'] += item.get('weight', 0)
                     summary['new_amount'] += item.get('amount', 0)
                 
