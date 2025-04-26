@@ -35,6 +35,7 @@ class SlipEntryForm(QWidget):
         self.connect_signals()
         
     def setup_ui(self):
+        print("inside setup_ui of slip_entry_form.py")
         """Setup the form UI."""
         # Set window background color
         self.setStyleSheet("""
@@ -255,6 +256,7 @@ class SlipEntryForm(QWidget):
             )
         
     def connect_signals(self):
+        print("inside connect_signals of slip_entry_form.py")
         """Connect all signals."""
         # New item signals
         self.code_input.returnPressed.connect(self.on_code_enter)
@@ -275,6 +277,7 @@ class SlipEntryForm(QWidget):
         self.comments_input.returnPressed.connect(self.on_comments_enter)
         
     def clear_new_item_fields(self):
+        print("inside clear_new_item_fields of slip_entry_form.py")
         """Clear only the new item input fields."""
         self.code_input.clear()
         self.name_input.clear()
@@ -284,6 +287,7 @@ class SlipEntryForm(QWidget):
         self.code_input.setFocus()
         
     def clear_old_item_fields(self):
+        print("inside clear_old_item_fields of slip_entry_form.py")
         """Clear only the old item input fields."""
         self.type_input.clear()
         self.old_weight_input.clear()
@@ -291,6 +295,7 @@ class SlipEntryForm(QWidget):
         self.type_input.setFocus()
         
     def clear_payment_fields(self):
+        print("inside clear_payment_fields of slip_entry_form.py")
         """Clear only the payment input fields."""
         self.cash_input.clear()
         self.card_input.clear()
@@ -298,6 +303,7 @@ class SlipEntryForm(QWidget):
         self.comments_input.clear()
         
     def clear_form(self):
+        print("inside clear_form of slip_entry_form.py")
         """Clear all input fields and reset the form."""
         self.clear_new_item_fields()
         self.clear_old_item_fields()
@@ -313,6 +319,7 @@ class SlipEntryForm(QWidget):
         self.code_input.setFocus()
         
     def get_payment_details(self) -> dict:
+        print("inside get_payment_details of slip_entry_form.py")
         """Get current payment details."""
         return {
             'cash': parse_amount(self.cash_input.text()) or 0,
@@ -321,11 +328,13 @@ class SlipEntryForm(QWidget):
             'comments': self.comments_input.text().strip()
         }
         
-    def get_items(self) -> tuple:
+    def get_items(self) -> tuple:   
+        print("inside get_items of slip_entry_form.py")
         """Get current new and old items."""
         return self.new_items.copy(), self.old_items.copy()
         
     def get_item_name_from_code(self, code: str) -> str:
+        print("inside get_item_name_from_code of slip_entry_form.py")
         """Get item name based on item code."""
         code = code.upper()  # Convert to uppercase for case-insensitive matching
         item_info = self.item_service.get_item_details(code)
@@ -334,6 +343,7 @@ class SlipEntryForm(QWidget):
         return ''  # Return empty string if code not found
 
     def on_code_enter(self):
+        print("inside on_code_enter of slip_entry_form.py")
         """Handle code input enter press."""
         print("\n=== New Item Entry Started ===")
         code = self.code_input.text().strip().upper()
@@ -364,13 +374,15 @@ class SlipEntryForm(QWidget):
         
         self.weight_input.setFocus()
         
-    def on_name_enter(self):
+    def on_name_enter(self):    
+        print("inside on_name_enter of slip_entry_form.py")
         """Handle name input enter press."""
         name = self.name_input.text().strip()
         if name:
             self.weight_input.setFocus()
             
     def on_weight_enter(self):
+        print("inside on_weight_enter of slip_entry_form.py")
         """Handle weight input enter press."""
         print("\n=== New Item Weight Entry ===")
         code = self.code_input.text().strip().upper()
@@ -392,6 +404,7 @@ class SlipEntryForm(QWidget):
         self.amount_input.setFocus()
         
     def on_amount_enter(self):
+        print("inside on_amount_enter of slip_entry_form.py")
         """Handle amount input enter press."""
         print("\n=== New Item Amount Entry ===")
         code = self.code_input.text().strip().upper()
@@ -436,7 +449,8 @@ class SlipEntryForm(QWidget):
         print(f"Moving to mark bill")
         self.mark_bill_input.setFocus()
         
-    def on_mark_bill_enter(self):
+    def on_mark_bill_enter(self):   
+        print("inside on_mark_bill_enter of slip_entry_form.py")
         """Handle mark bill input enter press."""
         print("\n=== Mark Bill Entry ===")
         code = self.code_input.text().strip().upper()
@@ -483,6 +497,7 @@ class SlipEntryForm(QWidget):
         self.clear_new_item_fields()
         
     def on_type_enter(self):
+        print("inside on_type_enter of slip_entry_form.py")
         """Handle type input enter press."""
         print("\n=== Old Item Entry Started ===")
         type_str = self.type_input.text().strip().upper()
@@ -504,6 +519,7 @@ class SlipEntryForm(QWidget):
         self.old_weight_input.setFocus()
         
     def on_old_weight_enter(self):
+        print("inside on_old_weight_enter of slip_entry_form.py")
         """Handle old item weight enter press."""
         print("\n=== Old Item Weight Entry ===")
         weight_str = self.old_weight_input.text().strip()
@@ -524,6 +540,7 @@ class SlipEntryForm(QWidget):
         self.old_amount_input.setFocus()
         
     def on_old_amount_enter(self):
+        print("inside on_old_amount_enter of slip_entry_form.py")
         """Handle old item amount input enter press."""
         print("\n=== Old Item Amount Entry ===")
         print("Current values:")
@@ -590,6 +607,7 @@ class SlipEntryForm(QWidget):
             self.old_amount_input.setFocus()
 
     def on_cash_enter(self):
+        print("inside on_cash_enter of slip_entry_form.py")
         """Handle cash payment input enter press."""
         print("\n=== Cash Payment Entry ===")
         amount_str = self.cash_input.text().strip()
@@ -611,6 +629,7 @@ class SlipEntryForm(QWidget):
         self.card_input.setFocus()
         
     def on_card_enter(self):
+        print("inside on_card_enter of slip_entry_form.py")
         """Handle card payment input enter press."""
         print("\n=== Card Payment Entry ===")
         amount_str = self.card_input.text().strip()
@@ -632,6 +651,7 @@ class SlipEntryForm(QWidget):
         self.upi_input.setFocus()
         
     def on_upi_enter(self):
+        print("inside on_upi_enter of slip_entry_form.py")
         """Handle UPI payment input enter press."""
         print("\n=== UPI Payment Entry ===")
         amount_str = self.upi_input.text().strip()
@@ -653,6 +673,7 @@ class SlipEntryForm(QWidget):
         self.comments_input.setFocus()
         
     def on_comments_enter(self):
+        print("inside on_comments_enter of slip_entry_form.py")
         """Handle comments entry."""
         try:
             if not self.view_model:
@@ -690,7 +711,6 @@ class SlipEntryForm(QWidget):
                     raise ValueError(f"Failed to add old item: {item}")
                 
             # Save transaction
-            print("Saving transaction...")
             if self.view_model.save_transaction(payment_details):
                 self.clear_form()
                 # Emit signal for successful save
@@ -706,52 +726,39 @@ class SlipEntryForm(QWidget):
             QMessageBox.critical(self, "Error", f"Error: {str(e)}")
             return False
 
-    def add_new_item(self):
-        """Add a new item to the transaction."""
+    def add_new_item(self, item_data):  
+        print("inside add_new_item of slip_entry_form.py")
+        """Add a new item to the current transaction."""
         try:
-            # Get values from form
-            code = self.code_input.text().strip()
-            name = self.name_input.text().strip()
-            weight = parse_weight(self.weight_input.text())
-            amount = parse_amount(self.amount_input.text())
-            mark_bill = self.mark_bill_input.text().strip().upper() == 'B'
+            # Ensure we have a valid item code
+            if not item_data.get('code'):
+                print("[ViewModel] Error: Invalid item code")
+                return False
             
-            # Determine item type from code (G for Gold, S for Silver)
-            item_type = 'G' if code.upper().startswith('G') else 'S'
+            # Set the item type based on the code prefix
+            item_type = 'G' if item_data['code'].startswith('G') else 'S'
             
-            # Create new item dictionary
+            # Create new item with correct type
             new_item = {
-                'code': code,
-                'name': name,
-                'type': item_type,  # Add type field
-                'weight': weight,
-                'amount': amount,
-                'is_billable': mark_bill  # Changed from mark_bill to is_billable
+                'code': item_data['code'],
+                'name': item_data.get('name', ''),
+                'type': item_type,  # Set the type explicitly
+                'weight': float(item_data.get('weight', 0)),
+                'amount': float(item_data.get('amount', 0)),
+                'is_billable': item_data.get('is_billable', False)
             }
             
-            print(f"[SlipEntryForm] Adding new item: {new_item}")
+            # Add to current transaction
+            self.current_transaction['new_items'].append(new_item)
+            print(f"[ViewModel] Added new item: {new_item}")
+            return True
             
-            # Add to view model
-            if self.view_model.add_new_item(new_item):
-                # Clear inputs
-                self.code_input.clear()
-                self.name_input.clear()
-                self.weight_input.clear()
-                self.amount_input.clear()
-                self.mark_bill_input.clear()
-                
-                # Update summary
-                self.update_summary()
-                
-                # Set focus back to code input
-                self.code_input.setFocus()
-            else:
-                raise Exception("Failed to add new item")
-                
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to add new item: {str(e)}")
-            
+            print(f"[ViewModel] Error adding new item: {e}")
+            return False
+
     def add_old_item(self):
+        print("inside add_old_item of slip_entry_form.py")
         """Add an old item to the transaction."""
         try:
             # Get values from form
@@ -791,6 +798,7 @@ class SlipEntryForm(QWidget):
             QMessageBox.critical(self, "Error", f"Failed to add old item: {str(e)}")
             
     def update_summary(self):
+        print("inside update_summary of slip_entry_form.py")
         """Update the transaction summary display."""
         try:
             summary = self.view_model.get_current_transaction_summary()

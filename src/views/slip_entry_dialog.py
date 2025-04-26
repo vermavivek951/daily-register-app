@@ -17,7 +17,8 @@ class SlipEntryDialog(QDialog):
         self.setup_ui()
         self.connect_signals()
         
-    def setup_ui(self):
+    def setup_ui(self): 
+        print("inside setup_ui of slip_entry_dialog.py")
         """Setup the dialog UI."""
         self.setWindowTitle("New Slip Entry")
         self.setMinimumWidth(800)
@@ -231,6 +232,7 @@ class SlipEntryDialog(QDialog):
         self.code_input.setFocus()
         
     def connect_signals(self):
+        print("inside connect_signals of slip_entry_dialog.py")
         """Connect all signals."""
         # New item signals
         self.code_input.returnPressed.connect(self.on_code_enter)
@@ -253,6 +255,7 @@ class SlipEntryDialog(QDialog):
         self.cancel_button.clicked.connect(self.reject)
         
     def on_code_enter(self):
+        print("inside on_code_enter of slip_entry_dialog.py")
         """Handle code input enter press."""
         print("\n=== Code Enter Pressed ===")
         code = self.code_input.text().strip()
@@ -286,6 +289,7 @@ class SlipEntryDialog(QDialog):
         self.code_input.setFocus()
         
     def on_weight_enter(self):
+        print("inside on_weight_enter of slip_entry_dialog.py")
         """Handle weight input enter press."""
         print("\n=== Weight Enter Pressed ===")
         weight_text = self.weight_input.text().strip()
@@ -306,6 +310,7 @@ class SlipEntryDialog(QDialog):
             self.weight_input.setFocus()
             
     def on_amount_enter(self):
+        print("inside on_amount_enter of slip_entry_dialog.py")
         """Handle amount input enter press."""
         print("\n=== Amount Enter Pressed ===")
         amount_text = self.amount_input.text().strip()
@@ -326,6 +331,7 @@ class SlipEntryDialog(QDialog):
             self.amount_input.setFocus()
             
     def on_mark_bill_enter(self):
+        print("inside on_mark_bill_enter of slip_entry_dialog.py")
         """Handle mark bill input enter press."""
         print("\n=== Mark Bill Enter Pressed ===")
         mark_bill = self.mark_bill_input.text().strip().upper()
@@ -394,6 +400,7 @@ class SlipEntryDialog(QDialog):
                 self.amount_input.setFocus()
         
     def on_type_enter(self):
+        print("inside on_type_enter of slip_entry_dialog.py")
         """Handle type input enter press."""
         print("\n=== Type Enter Pressed ===")
         type_text = self.type_input.text().strip().upper()
@@ -415,6 +422,7 @@ class SlipEntryDialog(QDialog):
         self.old_weight_input.setFocus()
         
     def on_old_weight_enter(self):
+        print("inside on_old_weight_enter of slip_entry_dialog.py")
         """Handle old item weight enter press."""
         print("\n=== Old Weight Enter Pressed ===")
         weight_text = self.old_weight_input.text().strip()
@@ -436,6 +444,7 @@ class SlipEntryDialog(QDialog):
             self.old_weight_input.setFocus()
             
     def on_old_amount_enter(self):
+        print("inside on_old_amount_enter of slip_entry_dialog.py")
         """Handle old item amount enter press."""
         print("\n=== Old Amount Enter Pressed ===")
         amount_text = self.old_amount_input.text().strip()
@@ -476,6 +485,7 @@ class SlipEntryDialog(QDialog):
             self.old_amount_input.setFocus()
             
     def on_cash_enter(self):
+        print("inside on_cash_enter of slip_entry_dialog.py")
         """Handle cash input enter press."""
         print("\n=== Cash Enter Pressed ===")
         if self.cash_input.text().strip():
@@ -493,6 +503,7 @@ class SlipEntryDialog(QDialog):
             self.card_input.setFocus()
             
     def on_card_enter(self):
+        print("inside on_card_enter of slip_entry_dialog.py")
         """Handle card input enter press."""
         print("\n=== Card Enter Pressed ===")
         if self.card_input.text().strip():
@@ -510,6 +521,7 @@ class SlipEntryDialog(QDialog):
             self.upi_input.setFocus()
             
     def on_upi_enter(self):
+        print("inside on_upi_enter of slip_entry_dialog.py")
         """Handle UPI input enter press."""
         print("\n=== UPI Enter Pressed ===")
         if self.upi_input.text().strip():
@@ -527,6 +539,7 @@ class SlipEntryDialog(QDialog):
             self.save_transaction()
             
     def save_transaction(self):
+        print("inside save_transaction of slip_entry_dialog.py")
         """Save the transaction."""
         print("\n=== Saving Transaction ===")
         # Get payment details
@@ -581,6 +594,7 @@ class SlipEntryDialog(QDialog):
             self.cash_input.setFocus()
 
     def keyPressEvent(self, event):
+        print("inside keyPressEvent of slip_entry_dialog.py")
         """Handle key press events."""
         # Don't let Enter/Return propagate up
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -588,6 +602,7 @@ class SlipEntryDialog(QDialog):
         super().keyPressEvent(event)
 
     def is_valid_float(self, text: str) -> bool:
+        print("inside is_valid_float of slip_entry_dialog.py")
         """Helper method to validate if a string can be converted to float."""
         try:
             float(text)

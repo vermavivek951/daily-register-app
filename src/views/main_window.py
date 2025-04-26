@@ -185,6 +185,7 @@ class JewellerySlip(QWidget):
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        print("inside __init__ of main_window.py")
         super().__init__()
         
         # Initialize database manager
@@ -212,6 +213,7 @@ class MainWindow(QMainWindow):
         self.refresh_register_view()
         
     def ensure_icons_directory(self):
+        print("inside ensure_icons_directory of main_window.py")
         """Create icons directory if it doesn't exist."""
         import os
         icons_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icons")
@@ -222,6 +224,7 @@ class MainWindow(QMainWindow):
                 print(f"Error creating icons directory: {e}")
         
     def setup_ui(self):
+        print("inside setup_ui of main_window.py")
         """Setup the main window UI."""
         self.setWindowTitle("Jewellery Shop Management System")
         self.setMinimumSize(1200, 800)
@@ -272,6 +275,7 @@ class MainWindow(QMainWindow):
         self.setup_status_bar()
         
     def setup_register_view(self, parent_layout):
+        print("inside setup_register_view of main_window.py")
         """Setup the register view."""
         # Create register view container
         register_container = QWidget()
@@ -525,12 +529,14 @@ class MainWindow(QMainWindow):
         parent_layout.addWidget(register_container)
         
     def connect_signals(self):
+        print("inside connect_signals of main_window.py")
         """Connect all signals and slots."""
         # Connect slip form signals
         if hasattr(self, 'slip_form'):
             self.slip_form.item_added.connect(self.on_new_item_added)
             self.slip_form.old_item_added.connect(self.on_old_item_added)
             self.slip_form.payment_entered.connect(self.on_payment_entered)
+            self.slip_form.transaction_saved.connect(self.refresh_register_view)
         
             # Connect date range signals
             self.from_date.dateChanged.connect(self.on_date_range_changed)
@@ -539,12 +545,14 @@ class MainWindow(QMainWindow):
             self.show_today_button.clicked.connect(self.show_today)
         
     def on_date_range_changed(self, date):
+        print("inside on_date_range_changed of main_window.py")
         """Handle date range change."""
         # Ensure 'to_date' is not earlier than 'from_date'
         if self.to_date.date() < self.from_date.date():
             self.to_date.setDate(self.from_date.date())
 
     def show_today(self):
+        print("inside show_today of main_window.py")
         """Set both dates to today and refresh the view."""
         today = QDate.currentDate()
         self.from_date.setDate(today)
@@ -552,6 +560,7 @@ class MainWindow(QMainWindow):
         self.refresh_register_view()
 
     def refresh_register_view(self):
+        print("inside refresh_register_view of main_window.py")
         """Refresh the register view with the current date's transactions."""
         try:
             print("Refreshing register view...")  # Debug print
@@ -561,7 +570,9 @@ class MainWindow(QMainWindow):
             
             # Get selected date range and convert QDate to Python date
             from_date = self.from_date.date().toPyDate()
+            print(f"From date: {from_date}")  # Debug print
             to_date = self.to_date.date().toPyDate()
+            print(f"To date: {to_date}")  # Debug print
             
             # Get transactions for the selected date range
             transactions = self.view_model.get_transactions_range(from_date, to_date)
@@ -696,6 +707,7 @@ class MainWindow(QMainWindow):
             self.is_handling_selection = False
 
     def handle_selection_changed(self):
+        print("inside handle_selection_changed of main_window.py")
         """Handle table selection changes to select all rows of a transaction."""
         # Prevent re-entry if we're already handling selection
         if self.is_handling_selection:
@@ -727,6 +739,7 @@ class MainWindow(QMainWindow):
             self.is_handling_selection = False
 
     def eventFilter(self, source, event):
+        # print("inside eventFilter of main_window.py" + str(source) + str(event) + str(self.is_handling_selection))
         """Event filter to handle deselection in table."""
         if (source is self.register_table.viewport() and 
             event.type() == QEvent.Type.MouseButtonPress):
@@ -760,6 +773,7 @@ class MainWindow(QMainWindow):
         return super().eventFilter(source, event)
 
     def update_daily_totals(self):
+        print("inside update_daily_totals of main_window.py")
         """Update the totals display for the selected date range."""
         try:
             from_date = self.from_date.date().toPyDate()
@@ -793,6 +807,7 @@ class MainWindow(QMainWindow):
             print(f"Error updating daily totals: {e}")
 
     def setup_menu(self):
+        print("inside setup_menu of main_window.py")
         """Setup the main menu bar."""
         menubar = self.menuBar()
         menubar.setStyleSheet("""
@@ -889,10 +904,12 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
         
     def setup_status_bar(self):
+        print("inside setup_status_bar of main_window.py")
         """Setup the status bar."""
         self.statusBar().showMessage("Ready")
         
     def apply_styles(self):
+        print("inside apply_styles of main_window.py")
         """Apply styles to the main window."""
         self.setStyleSheet("""
             QMainWindow {
@@ -1071,6 +1088,7 @@ class MainWindow(QMainWindow):
         """)
         
     def export_to_excel(self):
+        print("inside export_to_excel of main_window.py")
         """Export transactions to Excel."""
         try:
             current_date = self.date_selector.date().toPyDate()
@@ -1092,6 +1110,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to export data: {str(e)}")
             
     def export_to_csv(self):
+        print("inside export_to_csv of main_window.py")
         """Export transactions to CSV."""
         try:
             # Get save file location
@@ -1111,6 +1130,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to export data: {str(e)}")
             
     def backup_database(self):
+        print("inside backup_database of main_window.py")
         """Backup the database."""
         try:
             # Use the existing create_backup method
@@ -1125,6 +1145,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to backup database: {str(e)}")
             
     def restore_database(self):
+        print("inside restore_database of main_window.py")
         """Restore the database from backup."""
         try:
             # Show warning
@@ -1160,6 +1181,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to restore database: {str(e)}")
             
     def generate_daily_report(self):
+        print("inside generate_daily_report of main_window.py")
         """Generate and show daily report."""
         try:
             current_date = self.date_selector.date().toPyDate()
@@ -1212,6 +1234,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
             
     def generate_monthly_report(self):
+        print("inside generate_monthly_report of main_window.py")
         """Generate and show monthly report."""
         try:
             current_date = self.date_selector.date()
@@ -1230,6 +1253,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
             
     def show_billable_summary(self):
+        print("inside show_billable_summary of main_window.py")
         """Show a dialog with billable and non-billable items summary for the selected date range."""
         try:
             from_date = self.from_date.date().toPyDate()
@@ -1530,6 +1554,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to show billable summary: {str(e)}")
             
     def check_for_updates(self):
+        print("inside check_for_updates of main_window.py")
         """Check for software updates."""
         QMessageBox.information(
             self,
@@ -1538,6 +1563,7 @@ class MainWindow(QMainWindow):
         )
         
     def show_about_dialog(self):
+        print("inside show_about_dialog of main_window.py")
         """Show about dialog."""
         QMessageBox.about(
             self,
@@ -1549,6 +1575,7 @@ class MainWindow(QMainWindow):
         )
         
     def setup_summary_section(self):
+        print("inside setup_summary_section of main_window.py")
         """Setup the summary section at the bottom."""
         summary_layout = QHBoxLayout()
         
@@ -1644,6 +1671,7 @@ class MainWindow(QMainWindow):
         return summary_layout
 
     def show_slip(self, transaction):
+        print("inside show_slip of main_window.py")
         """Show the jewellery slip for a transaction."""
         try:
             # Store the slip as an instance variable to prevent garbage collection
@@ -1654,6 +1682,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to show slip: {str(e)}")
 
     def setup_slip_form(self, parent_layout):
+        print("inside setup_slip_form of main_window.py")
         """Setup the slip entry form in the top section."""
         # Create slip form container
         slip_container = QWidget()
@@ -1668,20 +1697,33 @@ class MainWindow(QMainWindow):
         # Add slip container to parent layout
         parent_layout.addWidget(slip_container)
         
-    def on_new_item_added(self, item):
+    def on_new_item_added(self, item_data):
+        print("inside on_new_item_added of main_window.py")
         """Handle new item added from slip form."""
         try:
-            if self.view_model and hasattr(self.view_model, 'add_new_item'):
-                if self.view_model.add_new_item(item):
-                    self.statusBar().showMessage(f"Added new item: {item['code']}", 3000)
-                else:
-                    QMessageBox.warning(self, "Error", "Failed to add new item")
+            if not self.view_model:
+                print("[MainWindow] Error: View model not initialized")
+                return
+            
+            # Add the new item
+            if self.view_model.add_new_item(item_data):
+                # Update status bar
+                self.statusBar().showMessage("New item added successfully", 3000)
+                
+                # Refresh the transaction table
+                self.refresh_register_view()
+                
+                # Update daily totals
+                self.update_daily_totals()
             else:
-                QMessageBox.critical(self, "Error", "View model not properly initialized")
+                raise Exception("Failed to add new item")
+            
         except Exception as e:
+            print(f"[MainWindow] Error adding new item: {e}")
             QMessageBox.critical(self, "Error", f"Failed to add new item: {str(e)}")
             
     def on_old_item_added(self, item):
+        print("inside on_old_item_added of main_window.py")
         """Handle old item added from slip form."""
         try:
             if self.view_model and hasattr(self.view_model, 'add_old_item'):
@@ -1694,35 +1736,58 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to add old item: {str(e)}")
             
-    def on_payment_entered(self, payment_details):
-        """Handle payment entered from slip form."""
+    def on_payment_entered(self):
+        print("inside on_payment_entered of main_window.py")
+        """Handle payment entry completion."""
         try:
-            if self.view_model and hasattr(self.view_model, 'save_transaction'):
-                # Save the transaction regardless of whether comments are empty
-                if self.view_model.save_transaction(payment_details):
-                    self.statusBar().showMessage("Transaction saved successfully", 3000)
-                    
-                    # Force update to today's date
-                    today = QDate.currentDate()
-                    self.from_date.setDate(today)
-                    self.to_date.setDate(today)
-                    
-                    # Clear the slip form
-                    if hasattr(self.slip_form, 'clear_form'):
-                        self.slip_form.clear_form()
-                    
-                    # Explicitly refresh the view and update totals
-                    self.refresh_register_view()
-                    self.update_daily_totals()
-                    
-                else:
-                    QMessageBox.warning(self, "Error", "Failed to save transaction")
+            print("inside on_payment_entered")
+            # Get payment details
+            cash_amount = parse_amount(self.cash_amount_input.text())
+            card_amount = parse_amount(self.card_amount_input.text())
+            upi_amount = parse_amount(self.upi_amount_input.text())
+            
+            # Validate total amount matches
+            total_payment = cash_amount + card_amount + upi_amount
+            expected_total = self.view_model.get_total_amount()
+            
+            if abs(total_payment - expected_total) > 0.01:  # Allow small floating point differences
+                QMessageBox.warning(self, "Invalid Payment", 
+                    f"Total payment (₹{total_payment:,.2f}) does not match expected amount (₹{expected_total:,.2f})")
+                return
+            
+            # Save transaction
+            payment_details = {
+                'cash_amount': cash_amount,
+                'card_amount': card_amount,
+                'upi_amount': upi_amount
+            }
+            
+            print("after this line checking if condition:sdsdc")
+            response = self.view_model.save_transaction(payment_details)
+            print("response is", response)
+            if response:
+                # Clear form
+                self.clear_form()
+                
+                # Refresh register view
+                self.refresh_register_view()
+                
+                # Update daily totals
+                self.update_daily_totals()
+                
+                # Show success message
+                QMessageBox.information(self, "Success", "Transaction saved successfully")
+                
+                # Close dialog
+                self.close()
             else:
-                QMessageBox.critical(self, "Error", "View model not properly initialized")
+                QMessageBox.warning(self, "Error", "Failed to save transaction")
+                
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save transaction: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Error saving transaction: {str(e)}")
 
     def delete_transaction(self, transaction):
+        print("inside delete_transaction of main_window.py")
         """Delete a transaction after confirmation."""
         try:
             # Show confirmation dialog
@@ -1760,6 +1825,7 @@ class MainWindow(QMainWindow):
             )
 
     def view_transaction(self, transaction):
+        print("inside view_transaction of main_window.py")
         """View detailed information about a transaction."""
         try:
             # Use the existing show_slip method to display the transaction details
@@ -1768,11 +1834,12 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to view transaction: {str(e)}")
 
     def save_transaction(self, transaction_data):
+        print("inside save_transaction of main_window.py")
         """Save a transaction and refresh the view."""
         try:
             # Save the transaction
             success = self.view_model.save_transaction(transaction_data)
-            
+            print("success is", success)
             if success:
                 # Refresh the view to show the new transaction
                 self.refresh_register_view()
@@ -1785,6 +1852,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"An error occurred while saving the transaction: {str(e)}")
 
     def show_settings_dialog(self):
+        print("inside show_settings_dialog of main_window.py")
         """Show the settings dialog."""
         from views.settings_dialog import SettingsDialog
         settings_dialog = SettingsDialog(self)

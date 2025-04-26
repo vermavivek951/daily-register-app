@@ -9,54 +9,46 @@ from utils.validation import (
 )
 from PyQt6.QtCore import QObject, pyqtSignal
 from database.db_manager import DatabaseManager
+from services.item_service import ItemService
 
 class TransactionViewModel(QObject):
     """View model for handling transaction-related UI logic"""
     def __init__(self, db_manager=None):
+        print("inside __init__ of view_models.py")
         """Initialize the view model with a transaction controller."""
         super().__init__()
         self.db_manager = db_manager or DatabaseManager()
+        self.item_service = ItemService()
         self.current_transaction = {
             'new_items': [],
             'old_items': [],
             'comments': ''
         }
 
-    def add_new_item(self, item):
+    def add_new_item(self, item_data):
+        print("inside add_new_item of view_models.py")
         """Add a new item to the current transaction."""
         try:
-            # Validate required fields
-            if not all(key in item for key in ['code', 'name', 'weight', 'amount']):
-                raise ValueError("Missing required fields in new item")
-                
-            # Ensure weight and amount are float
-            weight = float(item['weight'])
-            amount = float(item['amount'])
+            # Ensure we have a valid item code
+            if not item_data.get('code'):
+                print("[ViewModel] Error: Invalid item code")
+                return False
             
-            if weight <= 0 or amount <= 0:
-                raise ValueError("Weight and amount must be greater than 0")
-                
-            # Set item type based on code if not provided
-            if 'type' not in item:
-                item['type'] = 'G' if item['code'].upper().startswith('G') else 'S'
-                
-            # Create new item dictionary
+            item_type = self.item_service.get_item_type(item_data['code'])
+
+            # Create new item with correct type
             new_item = {
-                'code': item['code'].upper(),
-                'name': item['name'],
-                'type': item['type'].upper(),  # Ensure type is uppercase
-                'weight': weight,
-                'amount': amount,
-                'is_billable': bool(item.get('is_billable', False))
+                'code': item_data['code'],
+                'name': item_data.get('name', ''),
+                'type': item_type,
+                'weight': float(item_data.get('weight', 0)),
+                'amount': float(item_data.get('amount', 0)),
+                'is_billable': item_data.get('is_billable', False)
             }
             
-            print(f"[ViewModel] Adding new item: {new_item}")
-            
             # Add to current transaction
-            if 'new_items' not in self.current_transaction:
-                self.current_transaction['new_items'] = []
             self.current_transaction['new_items'].append(new_item)
-            
+            print(f"[ViewModel] Added new item: {new_item}")
             return True
             
         except Exception as e:
@@ -64,6 +56,7 @@ class TransactionViewModel(QObject):
             return False
 
     def add_old_item(self, item):
+        print("inside add_old_item of view_models.py")
         """Add an old item to the current transaction."""
         try:
             self.current_transaction['old_items'].append(item)
@@ -73,6 +66,7 @@ class TransactionViewModel(QObject):
             return False
 
     def save_transaction(self, transaction_data):
+        print("inside save_transaction of view_models.py")
         """Save a transaction to the database."""
         try:
             # Ensure we have a valid db_manager
@@ -112,22 +106,27 @@ class TransactionViewModel(QObject):
             return False
 
     def delete_transaction(self, transaction_id):
+        print("inside delete_transaction of view_models.py")
         """Delete a transaction from the database."""
         return self.db_manager.delete_transaction(transaction_id)
 
     def get_transactions(self, start_date, end_date):
+        print("inside get_transactions of view_models.py")
         """Get transactions for a date range."""
         return self.db_manager.get_transactions(start_date, end_date)
 
     def get_transactions_by_date(self, date):
+        print("inside get_transactions_by_date of view_models.py")
         """Get transactions for a specific date."""
         return self.db_manager.get_transactions_by_date(date)
 
     def get_transactions_range(self, start_date, end_date):
+        print("inside get_transactions_range of view_models.py")
         """Get transactions for a date range."""
         return self.db_manager.get_transactions_range(start_date, end_date)
 
     def format_transaction_for_display(self, transaction):
+        print("inside format_transaction_for_display of view_models.py")
         """Format a transaction for display in the UI."""
         try:
             # Format date and time
@@ -164,6 +163,7 @@ class TransactionViewModel(QObject):
             return None
 
     def get_daily_summary(self, date):
+        print("inside get_daily_summary of view_models.py")
         """Get summary for a specific date."""
         try:
             transactions = self.get_transactions(date, date)
@@ -224,6 +224,7 @@ class TransactionViewModel(QObject):
             }
 
     def clear_transaction(self):
+        print("inside clear_transaction of view_models.py")
         """Clear the current transaction."""
         self.current_transaction = {
             'new_items': [],
@@ -232,12 +233,14 @@ class TransactionViewModel(QObject):
         }
         
     def get_total_amount(self) -> float:
+        print("inside get_total_amount of view_models.py")
         """Get total amount of current transaction."""
         new_total = sum(item['amount'] for item in self.current_transaction['new_items'])
         old_total = sum(item['amount'] for item in self.current_transaction['old_items'])
         return new_total + old_total
         
     def get_current_transaction_summary(self):
+        print("inside get_current_transaction_summary of view_models.py")
         """Get summary of current transaction."""
         try:
             new_items = self.current_transaction.get('new_items', [])
@@ -291,6 +294,7 @@ class TransactionViewModel(QObject):
             }
         
     def get_billable_items(self, date):
+        print("inside get_billable_items of view_models.py")
         """
         Get billable and non-billable items for a specific date, grouped by item code.
         Returns a dictionary with 'billable' and 'non_billable' keys, each containing
@@ -351,6 +355,7 @@ class TransactionViewModel(QObject):
             }
 
     def get_date_range_summary(self, from_date, to_date):
+        print("inside get_date_range_summary of view_models.py")
         """Get summary of transactions between from_date and to_date inclusive."""
         try:
             transactions = self.get_transactions_range(from_date, to_date)
@@ -396,6 +401,7 @@ class TransactionViewModel(QObject):
             return {}
 
     def get_billable_items_range(self, from_date, to_date):
+        print("inside get_billable_items_range of view_models.py")
         """Get billable and non-billable items summary for a date range."""
         try:
             transactions = self.get_transactions_range(from_date, to_date)

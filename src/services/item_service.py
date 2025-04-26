@@ -251,3 +251,7 @@ class ItemService:
         except Exception as e:
             print(f"Error getting recent items: {e}")
             return [] 
+
+    def get_item_type(self , code: str) -> str:
+        """Get the type of an item based on the code."""
+        return self.get_item_details(code)['type']

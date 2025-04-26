@@ -30,6 +30,11 @@ jobs:
         Invoke-WebRequest -Uri $url -OutFile $output
         Start-Process -FilePath "is.exe" -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
         Remove-Item $output
+        if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
+          Write-Host "Inno Setup installation failed"
+          exit 1
+        }
+        Write-Host "Inno Setup installed successfully"
     
     - name: Install dependencies
       run: |

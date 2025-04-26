@@ -90,8 +90,8 @@ class Transaction:
         """Get a summary of the transaction."""
         # Calculate new items summary
         new_items_total = sum(item['amount'] for item in self.new_items)
-        new_gold = sum(item['weight'] for item in self.new_items if item['code'].startswith('G'))
-        new_silver = sum(item['weight'] for item in self.new_items if item['code'].startswith('S'))
+        new_gold = sum(item['weight'] for item in self.new_items if item['type'] == 'G' or item['type'] == 'Gold')
+        new_silver = sum(item['weight'] for item in self.new_items if item['type'] == 'S' or item['type'] == 'Silver')
         
         # Calculate old items summary
         old_items_total = sum(item['amount'] for item in self.old_items)
