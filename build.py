@@ -110,8 +110,6 @@ def run_pyinstaller(version):
         "--add-data", f"{SRC_DIR / 'services'};services",
         # Add database directory as data
         "--add-data", f"{SRC_DIR / 'database'};database",
-        # Add icons directory as data
-        "--add-data", f"{SRC_DIR / 'icons'};icons",
         # Add hook file
         "--additional-hooks-dir", str(PROJECT_ROOT),
         # PyQt6 imports
