@@ -251,7 +251,7 @@ def run_pyinstaller(version):
         print(f"   ! PyInstaller build failed with exit code {e.returncode}")
         raise
 
-def run_inno_setup():
+def run_inno_setup(version):
     """Runs Inno Setup Compiler"""
     print(f"--> Running Inno Setup Compiler...")
     try:
@@ -263,7 +263,6 @@ def run_inno_setup():
         print(f"   + Inno Setup build completed successfully")
         
         # Verify the installer was created
-        version = get_version()
         installer_path = OUTPUT_DIR / f"DailyRegister_Setup_v{version}.exe"
         if installer_path.exists():
             print(f"   + Installer created successfully at: {installer_path}")
@@ -301,7 +300,7 @@ def main():
         run_pyinstaller(version)
         
         # Run Inno Setup
-        run_inno_setup()
+        run_inno_setup(version)
         
         print("\n=== Build Process Completed Successfully ===\n")
     except Exception as e:
