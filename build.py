@@ -98,6 +98,22 @@ def run_pyinstaller(version):
         f"--icon={ICON_FILE}",
         f"--manifest={MANIFEST_FILE}",
         "--add-data", f"{MANIFEST_FILE};.",
+        # Add views directory as data
+        "--add-data", f"{SRC_DIR / 'views'};views",
+        # Add controllers directory as data
+        "--add-data", f"{SRC_DIR / 'controllers'};controllers",
+        # Add models directory as data
+        "--add-data", f"{SRC_DIR / 'models'};models",
+        # Add utils directory as data
+        "--add-data", f"{SRC_DIR / 'utils'};utils",
+        # Add services directory as data
+        "--add-data", f"{SRC_DIR / 'services'};services",
+        # Add database directory as data
+        "--add-data", f"{SRC_DIR / 'database'};database",
+        # Add icons directory as data
+        "--add-data", f"{SRC_DIR / 'icons'};icons",
+        # Add hook file
+        "--additional-hooks-dir", str(PROJECT_ROOT),
         # PyQt6 imports
         "--hidden-import=PyQt6",
         "--hidden-import=PyQt6.QtCore",
@@ -106,6 +122,27 @@ def run_pyinstaller(version):
         "--hidden-import=PyQt6.sip",
         "--hidden-import=PyQt6.QtPrintSupport",
         "--hidden-import=PyQt6.QtSvg",
+        # Add views module explicitly
+        "--hidden-import=views",
+        "--hidden-import=views.main_window",
+        "--hidden-import=views.transaction_display",
+        "--hidden-import=views.ui_components",
+        "--hidden-import=views.view_models",
+        "--hidden-import=views.slip_entry_form",
+        "--hidden-import=views.settings_dialog",
+        # Add controllers module explicitly
+        "--hidden-import=controllers",
+        "--hidden-import=controllers.transaction_controller",
+        # Add models module explicitly
+        "--hidden-import=models",
+        "--hidden-import=models.transaction",
+        # Add utils module explicitly
+        "--hidden-import=utils",
+        "--hidden-import=utils.version",
+        # Add services module explicitly
+        "--hidden-import=services",
+        # Add database module explicitly
+        "--hidden-import=database",
         # Additional Qt dependencies
         "--hidden-import=PyQt6.QtCore.Qt",
         "--hidden-import=PyQt6.QtCore.QSize",

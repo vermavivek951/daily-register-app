@@ -5,6 +5,9 @@ import os
 if getattr(sys, 'frozen', False):
     # If the application is run as a bundle (compiled with PyInstaller)
     application_path = sys._MEIPASS
+    # Add the application path to sys.path
+    if application_path not in sys.path:
+        sys.path.append(application_path)
 else:
     # If the application is run from a Python interpreter
     application_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,6 +16,16 @@ else:
 src_path = os.path.join(application_path, 'src')
 if src_path not in sys.path:
     sys.path.append(src_path)
+
+# Add the current directory to Python path (for when running as executable)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
+# Print debug information
+print(f"Python path: {sys.path}")
+print(f"Current directory: {os.getcwd()}")
+print(f"Application path: {application_path}")
 
 from PyQt6.QtWidgets import QApplication
 from views.main_window import MainWindow
