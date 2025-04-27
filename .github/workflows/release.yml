@@ -111,6 +111,28 @@ jobs:
         pip show pandas
         pip show openpyxl
     
+    - name: Debug - Check Project Structure
+      run: |
+        echo "=== Project Structure ==="
+        echo "Current directory: $PWD"
+        echo ""
+        echo "Root directory contents:"
+        Get-ChildItem | ForEach-Object {
+          echo "  $($_.Name)"
+        }
+        echo ""
+        echo "Src directory contents:"
+        Get-ChildItem -Path "src" | ForEach-Object {
+          echo "  $($_.Name)"
+        }
+        echo ""
+        echo "Hook files:"
+        Get-ChildItem -Path "." -Filter "hook-*.py" | ForEach-Object {
+          echo "  $($_.Name)"
+        }
+        echo ""
+        echo "=== End Project Structure ==="
+    
     - name: Build executable
       run: python build.py --version ${{ github.ref_name }}
     
