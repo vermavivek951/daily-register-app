@@ -64,27 +64,27 @@ jobs:
         python -c "import pandas; print('pandas available')"
         python -c "import openpyxl; print('openpyxl available')"
     
-    - name: Debug - Check Inno Setup Installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
-          Write-Host "Inno Setup is installed correctly"
-          try {
-            $output = & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /? 2>&1 | Out-String
-            Write-Host "Inno Setup help output:"
-            Write-Host $output
-            if ($output -match "Inno Setup (\d+)") {
-              Write-Host "Inno Setup version: $($matches[1])"
-            } else {
-              Write-Host "Could not extract version number, but Inno Setup is installed"
-            }
-          } catch {
-            Write-Host "Error checking Inno Setup version: $_"
-            Write-Host "Inno Setup is still installed and available for use"
-          }
-        } else {
-          Write-Host "Inno Setup is not installed correctly"
-          exit 1
-        }
+    # - name: Debug - Check Inno Setup Installation
+    #   run: |
+    #     if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+    #       Write-Host "Inno Setup is installed correctly"
+    #       try {
+    #         $output = & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /? 2>&1 | Out-String
+    #         Write-Host "Inno Setup help output:"
+    #         Write-Host $output
+    #         if ($output -match "Inno Setup (\d+)") {
+    #           Write-Host "Inno Setup version: $($matches[1])"
+    #         } else {
+    #           Write-Host "Could not extract version number, but Inno Setup is installed"
+    #         }
+    #       } catch {
+    #         Write-Host "Error checking Inno Setup version: $_"
+    #         Write-Host "Inno Setup is still installed and available for use"
+    #       }
+    #     } else {
+    #       Write-Host "Inno Setup is not installed correctly"
+    #       exit 1
+    #     }
     
     - name: Update version
       shell: pwsh
