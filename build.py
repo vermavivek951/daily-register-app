@@ -75,7 +75,6 @@ def run_pyinstaller():
         f"--add-data={SRC_DIR / 'models'};models",
         f"--add-data={SRC_DIR / 'utils'};utils",
         f"--add-data={BASE_DIR/ 'assets'};assets",
-        # f"--add-data={SRC_DIR / 'styles'};styles",
         f"--additional-hooks-dir={HOOKS_DIR}",
         "--hidden-import=PyQt6",
         "--hidden-import=matplotlib.backends.backend_qt5agg",
@@ -99,9 +98,9 @@ def run_inno_setup():
     """Compile installer using Inno Setup Compiler"""
     if not INSTALLER_SCRIPT.exists():
         raise FileNotFoundError(f"Inno Setup script not found: {INSTALLER_SCRIPT}")
-    print("🛠 Compiling installer with Inno Setup...")
+    print("Compiling installer with Inno Setup...")
     subprocess.run([str(INNO_COMPILER), str(INSTALLER_SCRIPT)], check=True)
-    print("✔ Installer compiled successfully.")
+    print("Installer compiled successfully.")
 
 # ---------------------------
 # Entry Point
