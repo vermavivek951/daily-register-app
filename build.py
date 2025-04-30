@@ -12,6 +12,7 @@ from build_notify import notify_user
 # Constants and Paths
 # ---------------------------
 
+APP_NAME = "DailyRegister"
 BASE_DIR = Path(__file__).parent.resolve()
 SRC_DIR = BASE_DIR / "src"
 MAIN_SCRIPT = SRC_DIR / "main.py"
@@ -69,6 +70,7 @@ def run_pyinstaller():
         "--noconfirm",
         "--clean",
         "--windowed",
+        f"--name={APP_NAME}",
         f"--icon={ICON_PATH}",
         f"--manifest={MANIFEST_PATH}",
         f"--add-data={SRC_DIR / 'views'};views",
