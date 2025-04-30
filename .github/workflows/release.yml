@@ -63,11 +63,19 @@ jobs:
         python -c "import matplotlib; print('matplotlib available')"
         python -c "import pandas; print('pandas available')"
         python -c "import openpyxl; print('openpyxl available')"
+
+      
+    - name: Set VERSION without "v" prefix
+      shell: pwsh
+      run: |
+        $version = $env:GITHUB_REF_NAME -replace '^v', ''
+        echo "VERSION=$version" >> $env:GITHUB_ENV
+
     
     - name: Update version
       shell: pwsh
       run: |
-        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        $version = "$env:VERSION"
         Write-Host "Setting version to: $version"
         $content = Get-Content -Path "src/utils/version.py" -Raw
         $pattern = '__version__ = ".*"'
@@ -76,6 +84,7 @@ jobs:
         Set-Content -Path "src/utils/version.py" -Value $content
         Write-Host "Updated version.py content:"
         Get-Content -Path "src/utils/version.py"
+
     
     - name: Debug - Show Installed Packages
       run: |
@@ -112,7 +121,7 @@ jobs:
         echo "=== End Project Structure ==="
     
     - name: Build executable
-      run: python build.py --version ${{ github.ref_name }}
+      run: python build.py --version $env:VERSION
     
     - name: Debug - Show Build Output
       run: |
@@ -158,6 +167,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./Output/DailyRegister_Setup_${{ github.ref_name }}.exe
-        asset_name: DailyRegister_Setup_${{ github.ref_name }}.exe
+        asset_path: ./Output/DailyRegister_Setup_${{ env:VERSION }}.exe
+        asset_name: DailyRegister_Setup_${{ env:VERSION }}.exe
         asset_content_type: application/octet-stream 

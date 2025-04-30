@@ -19,7 +19,7 @@ OutputDir=Output
 OutputBaseFilename=DailyRegister_Setup_{{VERSION}}
 Compression=lzma
 SolidCompression=yes
-WizardStyle=modern
+WizardStyle=modern  
 ; SignTool=
 
 [Languages]
