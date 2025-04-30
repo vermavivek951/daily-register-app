@@ -11,7 +11,8 @@ from build_notify import notify_user
 # ---------------------------
 # Constants and Paths
 # ---------------------------
-BASE_DIR = Path(__file__).resolve().parent
+
+BASE_DIR = Path(__file__).parent.resolve()
 SRC_DIR = BASE_DIR / "src"
 MAIN_SCRIPT = SRC_DIR / "main.py"
 VERSION_FILE = SRC_DIR / "utils" / "version.py"
